@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+    tss-api-stg:
+        image: registry.gitlab.com/trus1/api/staging
+        container_name: tss-api-stg
+        environment:
+            NODE_ENV: ${NODE_ENV}
+            PORT: ${PORT}
+            POSTGRES_HOST: ${POSTGRES_HOST}
+            POSTGRES_PORT: ${POSTGRES_PORT}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+            JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+            JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+            JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+            ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+            SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+            SENDGRID_EMAIL: ${SENDGRID_EMAIL}
+            SENT_EMAIL_FROM: ${SENT_EMAIL_FROM}
+            PINDO_API_KEY: ${PINDO_API_KEY}
+            PINDO_API_URL: ${PINDO_API_URL}
+            API_URL: ${API_URL}
+            CLIENT_APP_URL: ${CLIENT_APP_URL}
+            ADMIN_APP_URL: ${ADMIN_APP_URL}
+            DEFAULT_PASSWORD: ${DEFAULT_PASSWORD}
+            CRON_EXPRESSION: ${CRON_EXPRESSION}
+            SWAGGER_ENABLED: ${SWAGGER_ENABLED}
+        depends_on:
+            - tss-psqldb-stg
+        ports:
+            - 8010:5000
+        restart: unless-stopped
+        networks:
+            - tss-backend-stg-net
+
+    tss-psqldb-stg:
+        image: postgres:14-alpine
+        container_name: tss-psqldb-stg
+        environment:
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+        volumes:
+            - tss-psqldb-stg:/var/lib/postgresql/data
+        networks:
+            - tss-backend-stg-net
+            # - tss-postgres-net-stg
+volumes:
+    tss-psqldb-stg:
+        external: true
+    # tss-pgadmin-data-stg:
+networks:
+    tss-backend-stg-net:
+    # tss-postgres-net-stg:
