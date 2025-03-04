@@ -1,0 +1,1 @@
+{"version":3,"file":"1740684153878-delete-category.js","sourceRoot":"","sources":["../../../src/db/migrations/1740684153878-delete-category.ts"],"names":[],"mappings":";;;AAEA,MAAa,2BAA2B;IAE7B,KAAK,CAAC,EAAE,CAAC,WAAwB;QACpC,MAAM,WAAW,CAAC,KAAK,CAAC,4BAA4B,CAAC,CAAC;IAC1D,CAAC;IAEM,KAAK,CAAC,IAAI,CAAC,WAAwB;IAC1C,CAAC;CAEJ;AATD,kEASC"}
