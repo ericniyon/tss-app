@@ -1,0 +1,25 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ACCOUNT_IN_DORMANT_MODE = exports.RESET_CODE_EXPIRED = exports.RESET_CODE_NOT_FOUND = exports.NO_ACCESS_TO_THE_PORTAL = exports.RESET_PASSWORD_SUCCESS = exports.RESET_EMAIL_SENT = exports.YOU_CAN_LOGIN_WITH_EITHER_EMAIL_OR_PHONE_NUMBER = exports.VERIFICATION_CODE_SENT_TO_EMAIL = exports.VERIFICATION_CODE_SENT_TO_PHONE = exports.ACCOUNT_VERIFICATION_SUCCESS = exports.UNVERIFIED_ACCOUNT = exports.NO_USER_WITH_PHONE_NUMBER = exports.NO_USER_WITH_EMAIL = exports.EMAIL_OR_PHONE_NUMBER_IS_REQUIRED = exports.ACCOUNT_ALREADY_VERIFIED = exports.INVALID_CREDENTIAL = exports.INVALID_VERIFICATION_CODE = exports.VERIFICATION_CODE_EXPIRED = exports.VERIFICATION_EMAIL_SUBJECT = exports.SUCCESS_LOGIN = exports.SUCCESS_SIGNUP = void 0;
+exports.SUCCESS_SIGNUP = 'Signed-up successfully. Please check your phone or email to verify your account';
+exports.SUCCESS_LOGIN = 'Login successfully';
+exports.VERIFICATION_EMAIL_SUBJECT = 'Harambee account verification';
+exports.VERIFICATION_CODE_EXPIRED = 'Your verification code is expired';
+exports.INVALID_VERIFICATION_CODE = 'Invalid verification code';
+exports.INVALID_CREDENTIAL = 'Invalid credentials';
+exports.ACCOUNT_ALREADY_VERIFIED = 'Your account is already verified';
+exports.EMAIL_OR_PHONE_NUMBER_IS_REQUIRED = 'you need either email or phone number to receive the verification code';
+exports.NO_USER_WITH_EMAIL = 'No user with this email found in our database';
+exports.NO_USER_WITH_PHONE_NUMBER = 'No user with this phone number found in our database';
+exports.UNVERIFIED_ACCOUNT = 'Your account is not verified please verify your account.';
+exports.ACCOUNT_VERIFICATION_SUCCESS = 'Your account has been verified successfully. Please login';
+exports.VERIFICATION_CODE_SENT_TO_PHONE = 'The verification code was sent to your Phone number please check to verify';
+exports.VERIFICATION_CODE_SENT_TO_EMAIL = 'The verification code was sent to your email please check to verify';
+exports.YOU_CAN_LOGIN_WITH_EITHER_EMAIL_OR_PHONE_NUMBER = 'Please user either phone number or email';
+exports.RESET_EMAIL_SENT = 'Reset password email sent successfully';
+exports.RESET_PASSWORD_SUCCESS = 'Password is resetted successfully';
+exports.NO_ACCESS_TO_THE_PORTAL = 'Sorry you have no access to this portal';
+exports.RESET_CODE_NOT_FOUND = 'The provided code does not exist';
+exports.RESET_CODE_EXPIRED = 'The provided code has expired';
+exports.ACCOUNT_IN_DORMANT_MODE = 'Your account is deactivated please contact the administrator for the support';
+//# sourceMappingURL=auth.constant.js.map
