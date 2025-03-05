@@ -33,6 +33,8 @@ import { isRunningInDevelopment } from './shared/utils/env.util';
 import { PasswordEncryption } from './shared/utils/PasswordEncryption';
 import { UsersModule } from './users/users.module';
 import { PaymentModule } from './payment/payment.module';
+import { SubcategoryModule } from './subcategory/subcategory.module';
+import { SubsectionModule } from './subsection/subsection.module';
 
 @Module({
     imports: [
@@ -55,6 +57,8 @@ import { PaymentModule } from './payment/payment.module';
         JobModule,
         AnalyticsModule,
         PaymentModule,
+        SubcategoryModule,
+        SubsectionModule,
     ],
     controllers: [AppController],
     providers: [
