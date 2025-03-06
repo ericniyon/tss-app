@@ -20,11 +20,11 @@ const typeOrmConfig: TypeOrmModuleOptions = {
     migrations: ['dist/db/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/db/migrations' },
     migrationsRun: !isRunningInDevelopment(),
-    extra: {
-        ssl: {
-            rejectUnauthorized: false,
-        },
-    },
+    // extra: {
+    //     ssl: {
+    //         rejectUnauthorized: false,
+    //     },
+    // },
 };
 
 export default typeOrmConfig;

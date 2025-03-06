@@ -39,7 +39,7 @@ CREATE TABLE public.answers (
 );
 
 
-ALTER TABLE public.answers OWNER TO postgres;
+ALTER TABLE public.answers OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: answers_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -54,7 +54,7 @@ CREATE SEQUENCE public.answers_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.answers_id_seq OWNER TO postgres;
+ALTER TABLE public.answers_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: answers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -84,7 +84,7 @@ CREATE TABLE public.applications (
 );
 
 
-ALTER TABLE public.applications OWNER TO postgres;
+ALTER TABLE public.applications OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: applications_assignees_users; Type: TABLE; Schema: public; Owner: postgres
@@ -96,7 +96,7 @@ CREATE TABLE public.applications_assignees_users (
 );
 
 
-ALTER TABLE public.applications_assignees_users OWNER TO postgres;
+ALTER TABLE public.applications_assignees_users OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: applications_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -111,7 +111,7 @@ CREATE SEQUENCE public.applications_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.applications_id_seq OWNER TO postgres;
+ALTER TABLE public.applications_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: applications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -137,7 +137,7 @@ CREATE TABLE public.auth_otp (
 );
 
 
-ALTER TABLE public.auth_otp OWNER TO postgres;
+ALTER TABLE public.auth_otp OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: auth_otp_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -152,7 +152,7 @@ CREATE SEQUENCE public.auth_otp_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.auth_otp_id_seq OWNER TO postgres;
+ALTER TABLE public.auth_otp_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: auth_otp_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -175,7 +175,7 @@ CREATE TABLE public.categories (
 );
 
 
-ALTER TABLE public.categories OWNER TO postgres;
+ALTER TABLE public.categories OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: categories_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -190,7 +190,7 @@ CREATE SEQUENCE public.categories_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.categories_id_seq OWNER TO postgres;
+ALTER TABLE public.categories_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -217,7 +217,7 @@ CREATE TABLE public.certificates (
 );
 
 
-ALTER TABLE public.certificates OWNER TO postgres;
+ALTER TABLE public.certificates OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: certificates_assignees_users; Type: TABLE; Schema: public; Owner: postgres
@@ -229,7 +229,7 @@ CREATE TABLE public.certificates_assignees_users (
 );
 
 
-ALTER TABLE public.certificates_assignees_users OWNER TO postgres;
+ALTER TABLE public.certificates_assignees_users OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: certificates_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -244,7 +244,7 @@ CREATE SEQUENCE public.certificates_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.certificates_id_seq OWNER TO postgres;
+ALTER TABLE public.certificates_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: certificates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -264,7 +264,7 @@ CREATE TABLE public.migrations (
 );
 
 
-ALTER TABLE public.migrations OWNER TO postgres;
+ALTER TABLE public.migrations OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -279,7 +279,7 @@ CREATE SEQUENCE public.migrations_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.migrations_id_seq OWNER TO postgres;
+ALTER TABLE public.migrations_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -306,7 +306,7 @@ CREATE TABLE public.notifications (
 );
 
 
-ALTER TABLE public.notifications OWNER TO postgres;
+ALTER TABLE public.notifications OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: notifications_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -321,7 +321,7 @@ CREATE SEQUENCE public.notifications_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.notifications_id_seq OWNER TO postgres;
+ALTER TABLE public.notifications_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -340,7 +340,7 @@ CREATE TABLE public.notifications_target_users_users (
 );
 
 
-ALTER TABLE public.notifications_target_users_users OWNER TO postgres;
+ALTER TABLE public.notifications_target_users_users OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: payments; Type: TABLE; Schema: public; Owner: postgres
@@ -357,7 +357,7 @@ CREATE TABLE public.payments (
 );
 
 
-ALTER TABLE public.payments OWNER TO postgres;
+ALTER TABLE public.payments OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: payments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -372,7 +372,7 @@ CREATE SEQUENCE public.payments_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.payments_id_seq OWNER TO postgres;
+ALTER TABLE public.payments_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: payments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -400,7 +400,7 @@ CREATE TABLE public.questions (
 );
 
 
-ALTER TABLE public.questions OWNER TO postgres;
+ALTER TABLE public.questions OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: questions_categories; Type: TABLE; Schema: public; Owner: postgres
@@ -412,7 +412,7 @@ CREATE TABLE public.questions_categories (
 );
 
 
-ALTER TABLE public.questions_categories OWNER TO postgres;
+ALTER TABLE public.questions_categories OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: questions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -427,7 +427,7 @@ CREATE SEQUENCE public.questions_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.questions_id_seq OWNER TO postgres;
+ALTER TABLE public.questions_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: questions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -453,7 +453,7 @@ CREATE TABLE public.sections (
 );
 
 
-ALTER TABLE public.sections OWNER TO postgres;
+ALTER TABLE public.sections OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: sections_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -468,7 +468,7 @@ CREATE SEQUENCE public.sections_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.sections_id_seq OWNER TO postgres;
+ALTER TABLE public.sections_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: sections_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -491,7 +491,7 @@ CREATE TABLE public.typeorm_metadata (
 );
 
 
-ALTER TABLE public.typeorm_metadata OWNER TO postgres;
+ALTER TABLE public.typeorm_metadata OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
@@ -513,7 +513,7 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE public.users OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -528,7 +528,7 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_id_seq OWNER TO postgres;
+ALTER TABLE public.users_id_seq OWNER TO hanglzsq_tss_user;
 
 --
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
