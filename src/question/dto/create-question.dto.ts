@@ -45,4 +45,16 @@ export class CreateQuestionDto {
     @IsArray()
     @ArrayNotEmpty()
     categoryIds: number[];
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    subsectionId: number;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    subcategoryId: number;
 }

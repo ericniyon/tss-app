@@ -4,7 +4,8 @@ import { Category } from '../../category/entities/category.entity';
 import { Section } from '../../section/entities/section.entity';
 import BaseEntity from '../../shared/interfaces/base.entity';
 import { EType } from '../enums';
-
+import { Subsection } from 'src/subsection/entities/subsection.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 
 @Entity('questions')
 export class Question extends BaseEntity {
@@ -39,4 +40,14 @@ export class Question extends BaseEntity {
     @ManyToMany(() => Category)
     @JoinTable({ name: 'questions_categories' })
     categories: Category[];
+
+    @ManyToOne(() => Subsection)
+    @ApiProperty({ type: Subsection })
+    @Column({ nullable: true, default: null })
+    subsection: number;
+
+    @ManyToOne(() => Subcategory)
+    @ApiProperty({ type: Subcategory })
+    @Column({ nullable: true, default: null })
+    subcategory: number;
 }
