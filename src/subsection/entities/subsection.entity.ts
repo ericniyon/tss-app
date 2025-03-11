@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Section } from 'src/section/entities/section.entity';
-import BaseEntity from 'src/shared/interfaces/base.entity';
+import BaseEntity from '../../shared/interfaces/base.entity';
 import { Column, Entity, ManyToOne } from 'typeorm';
 
 @Entity('subsections')

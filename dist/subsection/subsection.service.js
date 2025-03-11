@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const index_js_1 = require("typeorm/index.js");
 const typeorm_1 = require("@nestjs/typeorm");
 const subsection_entity_1 = require("./entities/subsection.entity");
-const page_interface_1 = require("../shared/interfaces/page.interface");
 const nestjs_typeorm_paginate_1 = require("nestjs-typeorm-paginate");
 let SubsectionService = class SubsectionService {
     constructor(subsectionRepo) {

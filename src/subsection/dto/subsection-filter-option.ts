@@ -1,5 +1,5 @@
 import { OptionalProperty } from 'src/shared/decorators';
-import { CommonFilterOptionsDto } from 'src/shared/dto/common-filter-options.dto';
+import { CommonFilterOptionsDto } from '../../shared/dto/common-filter-options.dto';
 
 export class SubsectionFilterOptions extends CommonFilterOptionsDto {
     @OptionalProperty()

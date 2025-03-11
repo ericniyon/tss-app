@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const subcategory_entity_1 = require("./entities/subcategory.entity");
 const typeorm_2 = require("typeorm");
-const page_interface_1 = require("../shared/interfaces/page.interface");
 const nestjs_typeorm_paginate_1 = require("nestjs-typeorm-paginate");
 let SubcategoryService = class SubcategoryService {
     constructor(subcategoryRepo) {

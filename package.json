@@ -8,6 +8,9 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "copy-package": "cp package.json dist/package.json",
+    "copy-env": "cp .env dist/.env",
+    "build-with-package": "npm run build && npm run copy-package && npm run copy-env",
     "format": "prettier --write \"src /**/*.ts\" \"test /**/*.ts\"",
     "start": "yarn typeorm:run && nest start",
     "start:dev": "set NODE_ENV=development && nest start --watch",
@@ -46,7 +49,7 @@
     "class-validator": "^0.13.2",
     "cookie-parse": "^0.4.0",
     "cookie-parser": "^1.4.6",
-    "cron": "^3.1.9",
+    "cron": "^3.0.0",
     "date-fns": "^2.28.0",
     "exceljs": "^4.4.0",
     "express-rate-limit": "^6.2.0",

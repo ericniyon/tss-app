@@ -23,9 +23,9 @@ import { Subsection } from './entities/subsection.entity';
 import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { SubsectionService } from './subsection.service';
-import { GenericResponse } from 'src/shared/interfaces/generic-response.interface';
+import { GenericResponse } from '../shared/interfaces/generic-response.interface';
 import { CreateSubsectionDto } from './dto/create-subsection.dto';
-import { IPage, IPagination } from 'src/shared/interfaces/page.interface';
+import { IPage, IPagination } from '../shared/interfaces/page.interface';
 import { SubsectionFilterOptions } from './dto/subsection-filter-option';
 import { UpdateSubsectionDto } from './dto/update-subsection.dto';
 

@@ -1,6 +1,6 @@
 import { Subcategory } from './entities/subcategory.entity';
 import { Repository } from 'typeorm';
-import { IPage, IPagination } from 'src/shared/interfaces/page.interface';
+import { IPage, IPagination } from '../shared/interfaces/page.interface';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { SubcategoryFilterOptions } from './dto/subcategory-filter-options';
 export declare class SubcategoryService {

@@ -1,8 +1,8 @@
 import { Subcategory } from './entities/subcategory.entity';
 import { SubcategoryService } from './subcategory.service';
-import { GenericResponse } from 'src/shared/interfaces/generic-response.interface';
+import { GenericResponse } from '../shared/interfaces/generic-response.interface';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
-import { IPage, IPagination } from 'src/shared/interfaces/page.interface';
+import { IPage, IPagination } from '../shared/interfaces/page.interface';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { SubcategoryFilterOptions } from './dto/subcategory-filter-options';
 export declare class SubcategoryController {
