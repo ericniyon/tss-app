@@ -660,30 +660,20 @@ export class ApplicationService {
         Logger.log('Exporting all answers to Excel started');
 
         const query = this.answerRepo
-            .createQueryBuilder('a')
-            .select([
-                'c.name AS category',
-                's.title AS section',
-                'u.name AS companyName',
-                'u.email AS companyEmail',
-                'u.phone AS companyPhone',
-                'q.text AS question',
-                'a.responses AS answer',
-                'app.submittedAt AS submittedAt',
-            ])
-            .leftJoin(Application, 'app', 'a.application = app.id')
-            .leftJoin(User, 'u', 'app.applicant = u.id')
-            .leftJoin(Category, 'c', 'app.category = c.id')
-            .leftJoin(Question, 'q', 'a.question = q.id')
-            .leftJoin(Section, 's', 'q.section = s.id');
+            .createQueryBuilder('answer')
+            .leftJoinAndSelect('answer.application', 'application')
+            .leftJoinAndSelect('application.applicant', 'applicant')
+            .leftJoinAndSelect('application.category', 'category')
+            .leftJoinAndSelect('answer.question', 'question')
+            .leftJoinAndSelect('question.section', 'section');
         if (categoryId) {
-            query.where('c.id = :categoryId', { categoryId });
+            query.andWhere('category.id = :categoryId', { categoryId });
         }
         const answers = await query
-            .orderBy('c.name')
-            .addOrderBy('s.title')
-            .addOrderBy('u.phone')
-            .addOrderBy('q.text')
+            .orderBy('category.name')
+            .addOrderBy('section.title')
+            .addOrderBy('applicant.phone')
+            .addOrderBy('question.text')
             .getRawMany();
 
         Logger.log(`Found ${answers.length} answers`);
@@ -693,7 +683,9 @@ export class ApplicationService {
         const worksheet = workbook.addWorksheet('Report');
 
         // Get all unique questions
-        const questions = new Set(answers.map((answer) => answer.question));
+        const questions = new Set(
+            answers.map((answer) => answer.question_text),
+        );
         const columns = Array.from(questions).map((question) => ({
             header: question,
             key: question,
@@ -739,10 +731,10 @@ export class ApplicationService {
         // Add rows
         // Group by company phone and add all answers for each company as a row
         const groupedAnswers = answers.reduce((acc, answer) => {
-            if (!acc[answer.companyPhone]) {
-                acc[answer.companyPhone] = [];
+            if (!acc[answer.applicant_phone]) {
+                acc[answer.applicant_phone] = [];
             }
-            acc[answer.companyPhone].push(answer);
+            acc[answer.applicant_phone].push(answer);
             return acc;
         }, {});
 
@@ -750,21 +742,15 @@ export class ApplicationService {
             const companyAnswers = groupedAnswers[companyPhone];
             const row = { companyPhone };
             companyAnswers.forEach((answer) => {
-                row[answer.question] = answer.answer;
-                row['category'] = answer.category;
-                row['section'] = answer.section;
-                row['companyPhone'] = answer.companyPhone;
-                row['companyName'] = answer.companyName;
-                row['companyEmail'] = answer.companyEmail;
-                row['submittedAt'] = answer.submittedAt;
+                row[answer.question_text] = answer.answer_responses;
+                row['category'] = answer.category_name;
+                row['section'] = answer.section_title;
+                row['companyPhone'] = answer.applicant_phone;
+                row['companyName'] = answer.applicant_name;
+                row['companyEmail'] = answer.applicant_email;
+                row['submittedAt'] = answer.answer_createdAt;
             });
             worksheet.addRow(row);
-        });
-
-        // Auto-fit columns
-        worksheet.columns.forEach((column) => {
-            column.width =
-                column.header.length < 12 ? 12 : column.header.length + 5;
         });
 
         // Prepare and return buffer
