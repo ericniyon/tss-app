@@ -54,5 +54,19 @@ __decorate([
     (0, class_validator_1.ArrayNotEmpty)(),
     __metadata("design:type", Array)
 ], CreateQuestionDto.prototype, "categoryIds", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsPositive)(),
+    __metadata("design:type", Number)
+], CreateQuestionDto.prototype, "subsectionId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsPositive)(),
+    __metadata("design:type", Number)
+], CreateQuestionDto.prototype, "subcategoryId", void 0);
 exports.CreateQuestionDto = CreateQuestionDto;
 //# sourceMappingURL=create-question.dto.js.map

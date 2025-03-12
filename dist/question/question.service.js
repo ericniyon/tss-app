@@ -79,6 +79,7 @@ let QuestionService = class QuestionService {
             .leftJoin('question.section', 'section')
             .leftJoin('question.categories', 'categories')
             .leftJoin('question.subsection', 'subsection')
+            .leftJoin('question.subcategory', 'subcategory')
             .addSelect([
             'section.id',
             'section.title',
@@ -86,6 +87,8 @@ let QuestionService = class QuestionService {
             'categories.name',
             'subsection.id',
             'subsection.name',
+            'subcategory.id',
+            'subcategory.name',
         ]);
         const { actualStartDate, actualEndDate } = (0, date_util_1.getActualDateRange)(filterOptions.dateFrom, filterOptions.dateTo);
         if (actualStartDate) {

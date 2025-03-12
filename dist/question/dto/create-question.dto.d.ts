@@ -6,4 +6,6 @@ export declare class CreateQuestionDto {
     possibleAnswers: string[];
     sectionId: number;
     categoryIds: number[];
+    subsectionId: number;
+    subcategoryId: number;
 }
