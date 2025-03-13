@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", application_entity_1.Application)
 ], Answer.prototype, "application", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => question_entity_1.Question),
+    (0, typeorm_1.ManyToOne)(() => question_entity_1.Question, (question) => question.answers),
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", question_entity_1.Question)
 ], Answer.prototype, "question", void 0);

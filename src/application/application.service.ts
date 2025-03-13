@@ -658,26 +658,25 @@ export class ApplicationService {
     }> {
         // Get all answers with the necessary relationships
         Logger.log('Exporting all answers to Excel started');
-
-        const query = this.answerRepo
+        const query = await this.answerRepo
             .createQueryBuilder('answer')
             .leftJoinAndSelect('answer.application', 'application')
             .leftJoinAndSelect('application.applicant', 'applicant')
             .leftJoinAndSelect('application.category', 'category')
             .leftJoinAndSelect('answer.question', 'question')
             .leftJoinAndSelect('question.section', 'section');
+        // console.log(query.getSql());
+        // Logger.log(JSON.stringify(query.getMany()));
         if (categoryId) {
             query.andWhere('category.id = :categoryId', { categoryId });
         }
+        // const result = await query.getMany();
         const answers = await query
             .orderBy('category.name')
             .addOrderBy('section.title')
             .addOrderBy('applicant.phone')
             .addOrderBy('question.text')
             .getRawMany();
-
-        Logger.log(`Found ${answers.length} answers`);
-        Logger.log('Creating Excel workbook');
 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Report');
@@ -691,7 +690,6 @@ export class ApplicationService {
             key: question,
             width: 20,
         }));
-
         worksheet.columns = [
             {
                 header: 'Submitted At',

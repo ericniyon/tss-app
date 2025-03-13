@@ -13,4 +13,5 @@ export declare class Question extends BaseEntity {
     categories: Category[];
     subsection: number;
     subcategory: number;
+    answers: any;
 }

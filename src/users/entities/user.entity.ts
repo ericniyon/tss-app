@@ -50,4 +50,5 @@ export class User extends BaseEntity {
         { lazy: true },
     )
     notifications: Notification[];
+    applications: any;
 }

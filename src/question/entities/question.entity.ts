@@ -33,7 +33,7 @@ export class Question extends BaseEntity {
     @ApiProperty()
     hasBeenAsked: boolean;
 
-    @ManyToOne(() => Section, (section) => section.questions)
+    @ManyToOne(() => Section)
     @ApiProperty({ type: Section })
     section: Section;
 
@@ -50,4 +50,5 @@ export class Question extends BaseEntity {
     @ApiProperty({ type: Subcategory })
     @Column({ nullable: true, default: null })
     subcategory: number;
+    answers: any;
 }

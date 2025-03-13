@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Question.prototype, "hasBeenAsked", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => section_entity_1.Section, (section) => section.questions),
+    (0, typeorm_1.ManyToOne)(() => section_entity_1.Section),
     (0, swagger_1.ApiProperty)({ type: section_entity_1.Section }),
     __metadata("design:type", section_entity_1.Section)
 ], Question.prototype, "section", void 0);

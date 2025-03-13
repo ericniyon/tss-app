@@ -494,37 +494,25 @@ let ApplicationService = class ApplicationService {
     }
     async exportAllAnswersToExcel(categoryId) {
         common_1.Logger.log('Exporting all answers to Excel started');
-        const query = this.answerRepo
-            .createQueryBuilder('a')
-            .select([
-            'c.name AS category',
-            's.title AS section',
-            'u.name AS companyName',
-            'u.email AS companyEmail',
-            'u.phone AS companyPhone',
-            'q.text AS question',
-            'a.responses AS answer',
-            'app.submittedAt AS submittedAt',
-        ])
-            .leftJoin(application_entity_1.Application, 'app', 'a.application = app.id')
-            .leftJoin(user_entity_1.User, 'u', 'app.applicant = u.id')
-            .leftJoin(category_entity_1.Category, 'c', 'app.category = c.id')
-            .leftJoin(question_entity_1.Question, 'q', 'a.question = q.id')
-            .leftJoin(section_entity_1.Section, 's', 'q.section = s.id');
+        const query = await this.answerRepo
+            .createQueryBuilder('answer')
+            .leftJoinAndSelect('answer.application', 'application')
+            .leftJoinAndSelect('application.applicant', 'applicant')
+            .leftJoinAndSelect('application.category', 'category')
+            .leftJoinAndSelect('answer.question', 'question')
+            .leftJoinAndSelect('question.section', 'section');
         if (categoryId) {
-            query.where('c.id = :categoryId', { categoryId });
+            query.andWhere('category.id = :categoryId', { categoryId });
         }
         const answers = await query
-            .orderBy('c.name')
-            .addOrderBy('s.title')
-            .addOrderBy('u.phone')
-            .addOrderBy('q.text')
+            .orderBy('category.name')
+            .addOrderBy('section.title')
+            .addOrderBy('applicant.phone')
+            .addOrderBy('question.text')
             .getRawMany();
-        common_1.Logger.log(`Found ${answers.length} answers`);
-        common_1.Logger.log('Creating Excel workbook');
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Report');
-        const questions = new Set(answers.map((answer) => answer.question));
+        const questions = new Set(answers.map((answer) => answer.question_text));
         const columns = Array.from(questions).map((question) => ({
             header: question,
             key: question,
@@ -565,29 +553,25 @@ let ApplicationService = class ApplicationService {
         ];
         common_1.Logger.log('Adding rows to Excel workbook');
         const groupedAnswers = answers.reduce((acc, answer) => {
-            if (!acc[answer.companyPhone]) {
-                acc[answer.companyPhone] = [];
+            if (!acc[answer.applicant_phone]) {
+                acc[answer.applicant_phone] = [];
             }
-            acc[answer.companyPhone].push(answer);
+            acc[answer.applicant_phone].push(answer);
             return acc;
         }, {});
         Object.keys(groupedAnswers).forEach((companyPhone) => {
             const companyAnswers = groupedAnswers[companyPhone];
             const row = { companyPhone };
             companyAnswers.forEach((answer) => {
-                row[answer.question] = answer.answer;
-                row['category'] = answer.category;
-                row['section'] = answer.section;
-                row['companyPhone'] = answer.companyPhone;
-                row['companyName'] = answer.companyName;
-                row['companyEmail'] = answer.companyEmail;
-                row['submittedAt'] = answer.submittedAt;
+                row[answer.question_text] = answer.answer_responses;
+                row['category'] = answer.category_name;
+                row['section'] = answer.section_title;
+                row['companyPhone'] = answer.applicant_phone;
+                row['companyName'] = answer.applicant_name;
+                row['companyEmail'] = answer.applicant_email;
+                row['submittedAt'] = answer.answer_createdAt;
             });
             worksheet.addRow(row);
-        });
-        worksheet.columns.forEach((column) => {
-            column.width =
-                column.header.length < 12 ? 12 : column.header.length + 5;
         });
         const buffer = await workbook.xlsx.writeBuffer();
         common_1.Logger.log('Exporting all answers completed');

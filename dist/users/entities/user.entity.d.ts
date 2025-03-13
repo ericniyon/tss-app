@@ -13,4 +13,5 @@ export declare class User extends BaseEntity {
     role: Roles;
     otp: AuthOtp[];
     notifications: Notification[];
+    applications: any;
 }
