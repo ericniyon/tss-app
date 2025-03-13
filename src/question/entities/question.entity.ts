@@ -41,13 +41,13 @@ export class Question extends BaseEntity {
     @JoinTable({ name: 'questions_categories' })
     categories: Category[];
 
-    @ManyToOne(() => Subsection)
-    @ApiProperty({ type: Subsection })
-    @Column({ nullable: true, default: null })
-    subsection: number;
+    // @ManyToOne(() => Subsection)
+    // @ApiProperty({ type: Subsection })
+    // @Column({ nullable: true, default: null })
+    // subsection: number;
 
-    @ManyToOne(() => Subcategory)
-    @ApiProperty({ type: Subcategory })
-    @Column({ nullable: true, default: null })
-    subcategory: number;
+    // @ManyToOne(() => Subcategory)
+    // @ApiProperty({ type: Subcategory })
+    // @Column({ nullable: true, default: null })
+    // subcategory: number;
 }
