@@ -19,11 +19,6 @@ const typeOrmConfig = {
     migrations: ['dist/db/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/db/migrations' },
     migrationsRun: !(0, env_util_1.isRunningInDevelopment)(),
-    extra: {
-        ssl: {
-            rejectUnauthorized: false,
-        },
-    },
 };
 exports.default = typeOrmConfig;
 //# sourceMappingURL=typeorm.config.js.map

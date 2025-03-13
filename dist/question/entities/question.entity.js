@@ -16,8 +16,6 @@ const category_entity_1 = require("../../category/entities/category.entity");
 const section_entity_1 = require("../../section/entities/section.entity");
 const base_entity_1 = require("../../shared/interfaces/base.entity");
 const enums_1 = require("../enums");
-const subsection_entity_1 = require("../../subsection/entities/subsection.entity");
-const subcategory_entity_1 = require("../../subcategory/entities/subcategory.entity");
 let Question = class Question extends base_entity_1.default {
 };
 __decorate([
@@ -60,18 +58,6 @@ __decorate([
     (0, typeorm_1.JoinTable)({ name: 'questions_categories' }),
     __metadata("design:type", Array)
 ], Question.prototype, "categories", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => subsection_entity_1.Subsection),
-    (0, swagger_1.ApiProperty)({ type: subsection_entity_1.Subsection }),
-    (0, typeorm_1.Column)({ nullable: true, default: null }),
-    __metadata("design:type", Number)
-], Question.prototype, "subsection", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => subcategory_entity_1.Subcategory),
-    (0, swagger_1.ApiProperty)({ type: subcategory_entity_1.Subcategory }),
-    (0, typeorm_1.Column)({ nullable: true, default: null }),
-    __metadata("design:type", Number)
-], Question.prototype, "subcategory", void 0);
 Question = __decorate([
     (0, typeorm_1.Entity)('questions')
 ], Question);

@@ -33,7 +33,7 @@ export class Answer extends BaseEntity {
     @ApiProperty()
     application: Application;
 
-    @ManyToOne(() => Question, (question) => question.answers)
+    @ManyToOne(() => Question)
     @ApiProperty()
     question: Question;
 }

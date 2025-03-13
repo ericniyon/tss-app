@@ -494,7 +494,7 @@ let ApplicationService = class ApplicationService {
     }
     async exportAllAnswersToExcel(categoryId) {
         common_1.Logger.log('Exporting all answers to Excel started');
-        const query = await this.answerRepo
+        const query = this.answerRepo
             .createQueryBuilder('answer')
             .leftJoinAndSelect('answer.application', 'application')
             .leftJoinAndSelect('application.applicant', 'applicant')
@@ -510,6 +510,8 @@ let ApplicationService = class ApplicationService {
             .addOrderBy('applicant.phone')
             .addOrderBy('question.text')
             .getRawMany();
+        common_1.Logger.log(`Found ${answers.length} answers`);
+        common_1.Logger.log('Creating Excel workbook');
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Report');
         const questions = new Set(answers.map((answer) => answer.question_text));

@@ -41,9 +41,8 @@ __decorate([
     __metadata("design:type", Array)
 ], Application.prototype, "answers", void 0);
 __decorate([
-    (0, typeorm_1.OneToOne)(() => user_entity_1.User),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User),
     (0, swagger_1.ApiProperty)(),
-    (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", user_entity_1.User)
 ], Application.prototype, "applicant", void 0);
 __decorate([
