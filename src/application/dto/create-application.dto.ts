@@ -16,4 +16,16 @@ export class CreateApplicationDto {
 
     @OptionalProperty()
     answers: CreateOrUpdateAnswersDto;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    subsectionId: number;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    subcategoryId: number;
 }

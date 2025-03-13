@@ -149,4 +149,16 @@ export class QuestionController {
             message: `Question ${results ? 'activated' : 'deactivated'}`,
         };
     }
+
+    @Get('sections/:sectionId')
+    @OkResponse()
+    async findQuestionsBySection(
+        @Param('sectionId', ParseIntPipe) sectionId: string,
+    ): Promise<GenericResponse<Question[]>> {
+        const results = await this.questionService.findBySection(+sectionId);
+        return {
+            message: 'Questions retrieved successfully',
+            results,
+        };
+    }
 }
