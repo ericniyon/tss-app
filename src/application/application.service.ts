@@ -44,6 +44,8 @@ import { Answer } from './entities/answer.entity';
 import { Application } from './entities/application.entity';
 import { EAnswerStatus, EApplicationStatus } from './enums';
 import { IApplication } from './interfaces/application.interface';
+import { Subsection } from 'src/subsection/entities/subsection.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 
 @Injectable()
 export class ApplicationService {
@@ -65,8 +67,10 @@ export class ApplicationService {
         private sendgridService: SendGridService,
         private configService: ConfigService,
         private certificateService: CertificateService,
-
-        private readonly connection: Connection,
+        @InjectRepository(Subsection)
+        private readonly subsectionRepo: Repository<Subsection>,
+        @InjectRepository(Subcategory)
+        private readonly subcategoryRepo: Repository<Subcategory>,
     ) {}
     async create(
         createApplicationDto: CreateApplicationDto,
@@ -90,11 +94,24 @@ export class ApplicationService {
             createApplicationDto.categoryId,
         );
         if (!category) throw new NotFoundException('Category not found');
+
+        const subcategory = await this.subcategoryRepo.findOne(
+            createApplicationDto.subcategoryId,
+        );
+        if (!subcategory) throw new NotFoundException('Subcategory not found');
+
+        const subsection = await this.subsectionRepo.findOne(
+            createApplicationDto.subsectionId,
+        );
+        if (!subsection) throw new NotFoundException('Subsection not found');
+
         const newApplication = await this.applicationRepo.save({
             ...new Application(),
             companyUrl: createApplicationDto.companyUrl,
             category,
             applicant: user,
+            subcategory: createApplicationDto.subcategoryId,
+            subsection: createApplicationDto.subsectionId,
         });
         if (createApplicationDto.answers) {
             await this.createOrUpdateAnswers(
@@ -152,6 +169,7 @@ export class ApplicationService {
         }
         return await this.findOne({ where: { id: application.id } });
     }
+
     async findAll(
         user: User,
         options: IPagination,
@@ -162,6 +180,8 @@ export class ApplicationService {
             .leftJoin('application.applicant', 'applicant')
             .leftJoin('application.category', 'category')
             .leftJoin('application.assignees', 'assignees')
+            .leftJoin('application.subsection', 'subsection')
+            .leftJoin('application.subcategory', 'subcategory')
             .addSelect([
                 'category.id',
                 'category.name',
@@ -171,6 +191,10 @@ export class ApplicationService {
                 'applicant.phone',
                 'assignees.id',
                 'assignees.name',
+                'subsection.id',
+                'subsection.name',
+                'subcategory.id',
+                'subcategory.name',
             ]);
         const { actualStartDate, actualEndDate } = getActualDateRange(
             filterOptions.dateFrom,
