@@ -30,7 +30,6 @@ import { SubsectionFilterOptions } from './dto/subsection-filter-option';
 import { UpdateSubsectionDto } from './dto/update-subsection.dto';
 
 @Controller('subsections')
-@Auth()
 @ApiTags('Subsections')
 @ApiExtraModels(Subsection)
 @ErrorResponses(UnauthorizedResponse, ForbiddenResponse)

@@ -11,4 +11,6 @@ export declare class Question extends BaseEntity {
     hasBeenAsked: boolean;
     section: Section;
     categories: Category[];
+    subsection: number;
+    subcategory: number;
 }

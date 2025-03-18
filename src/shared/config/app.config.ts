@@ -13,8 +13,8 @@ export const commonConfig = (): AppConfig => ({
     cron_expression: process.env.CRON_EXPRESSION,
     swaggerEnabled: process.env.SWAGGER_ENABLED === 'true',
     jwt: {
-        privateKey: process.env.JWT_PRIVATE_KEY.trim(),
-        publicKey: process.env.JWT_PUBLIC_KEY.trim(),
+        privateKey: process.env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        publicKey: process.env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n'),
         expiresIn: process.env.JWT_EXPIRES_IN,
     },
     web: {

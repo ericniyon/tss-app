@@ -94,7 +94,6 @@ __decorate([
 ], SubsectionController.prototype, "update", null);
 SubsectionController = __decorate([
     (0, common_1.Controller)('subsections'),
-    (0, auth_decorator_1.Auth)(),
     (0, swagger_1.ApiTags)('Subsections'),
     (0, swagger_1.ApiExtraModels)(subsection_entity_1.Subsection),
     (0, decorators_1.ErrorResponses)(decorators_1.UnauthorizedResponse, decorators_1.ForbiddenResponse),

@@ -98,7 +98,6 @@ __decorate([
 ], SubcategoryController.prototype, "update", null);
 SubcategoryController = __decorate([
     (0, common_1.Controller)('subcategories'),
-    (0, auth_decorator_1.Auth)(),
     (0, swagger_1.ApiTags)('Subcategories'),
     (0, swagger_1.ApiExtraModels)(subcategory_entity_1.Subcategory),
     (0, decorators_1.ErrorResponses)(decorators_1.UnauthorizedResponse, decorators_1.ForbiddenResponse),

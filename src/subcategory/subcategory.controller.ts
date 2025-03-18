@@ -30,7 +30,6 @@ import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { SubcategoryFilterOptions } from './dto/subcategory-filter-options';
 
 @Controller('subcategories')
-@Auth()
 @ApiTags('Subcategories')
 @ApiExtraModels(Subcategory)
 @ErrorResponses(UnauthorizedResponse, ForbiddenResponse)
