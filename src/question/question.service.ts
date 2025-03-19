@@ -2,6 +2,7 @@ import {
     BadRequestException,
     ConflictException,
     Injectable,
+    Logger,
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,6 +18,8 @@ import { QuestionFilterOptionsDto } from './dto/question-filter-options.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question } from './entities/question.entity';
 import { EStatus, EType } from './enums';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
+import { Subsection } from 'src/subsection/entities/subsection.entity';
 
 /**
  * @Service question operations
@@ -30,19 +33,18 @@ export class QuestionService {
         private readonly sectionRepo: Repository<Section>,
         @InjectRepository(Category)
         private readonly categoryRepo: Repository<Category>,
+        @InjectRepository(Subsection)
+        private readonly subsectionRepo: Repository<Subsection>,
+        @InjectRepository(Subcategory)
+        private readonly subcategoryRepo: Repository<Subcategory>,
     ) {}
     async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
         let newQuestion = new Question();
         newQuestion = {
             ...newQuestion,
-            ...pick(createQuestionDto, [
-                'text',
-                'requiresAttachments',
-                'type',
-                'subcategoryId',
-                'subsectionId',
-            ]),
+            ...pick(createQuestionDto, ['text', 'requiresAttachments', 'type']),
         };
+        Logger.log(newQuestion);
         if (createQuestionDto.sectionId) {
             const section = await this.sectionRepo.findOne({
                 id: createQuestionDto.sectionId,
@@ -77,6 +79,29 @@ export class QuestionService {
                 'Possible answers are required for multiple suggestion questions',
             );
         newQuestion.possibleAnswers = createQuestionDto.possibleAnswers;
+
+        if (createQuestionDto.subsectionId) {
+            const subsection = await this.subsectionRepo.findOne({
+                id: createQuestionDto.subsectionId,
+            });
+            if (!subsection)
+                throw new NotFoundException(
+                    'Subsection not found or not active',
+                );
+            newQuestion.subsection = subsection.id;
+        }
+
+        if (createQuestionDto.subcategoryId) {
+            const subcategory = await this.subcategoryRepo.findOne({
+                id: createQuestionDto.subcategoryId,
+            });
+            if (!subcategory)
+                throw new NotFoundException(
+                    'Subcategory not found or not active',
+                );
+            newQuestion.subcategory = subcategory.id;
+        }
+
         return await this.questionRepo.save(newQuestion);
     }
 
