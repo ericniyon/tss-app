@@ -13,6 +13,8 @@ import { ApplicationController } from './application.controller';
 import { ApplicationService } from './application.service';
 import { Answer } from './entities/answer.entity';
 import { Application } from './entities/application.entity';
+import { Subcategory } from '../subcategory/entities/subcategory.entity';
+import { Subsection } from '../subsection/entities/subsection.entity';
 
 @Module({
     imports: [
@@ -24,6 +26,8 @@ import { Application } from './entities/application.entity';
             Section,
             User,
             Certificate,
+            Subcategory,
+            Subsection,
         ]),
         CertificateModule,
     ],

@@ -15,6 +15,8 @@ import BaseEntity from '../../shared/interfaces/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { EApplicationStatus, EPlatform } from '../enums';
 import { Answer } from './answer.entity';
+import { Subsection } from 'src/subsection/entities/subsection.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 
 @Entity('applications')
 export class Application extends BaseEntity {
@@ -71,4 +73,12 @@ export class Application extends BaseEntity {
     @OneToOne(() => Certificate, (certificate) => certificate.application)
     @ApiProperty()
     certificate: Certificate;
+
+    @ManyToOne(() => Subsection)
+    @ApiProperty({ type: Subsection })
+    subsection: number;
+
+    @ManyToOne(() => Subcategory)
+    @ApiProperty({ type: Subcategory })
+    subcategory: number;
 }

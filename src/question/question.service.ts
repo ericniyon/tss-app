@@ -279,4 +279,29 @@ export class QuestionService {
         question.active = !question.active;
         return (await this.questionRepo.save(question)).active;
     }
+
+    async findBySection(sectionId: number): Promise<Question[]> {
+        const queryBuilder = this.questionRepo.createQueryBuilder('question');
+        queryBuilder
+            .leftJoin('question.section', 'section')
+            .leftJoin('question.categories', 'categories')
+            .leftJoin('question.subsection', 'subsection')
+            .leftJoin('question.subcategory', 'subcategory')
+            .addSelect([
+                'section.id',
+                'section.title',
+                'categories.id',
+                'categories.name',
+                'subsection.id',
+                'subsection.name',
+                'subcategory.id',
+                'subcategory.name',
+            ])
+            .orderBy('question.subsection', 'ASC');
+        return await queryBuilder
+            .where('question.section = :section', {
+                section: sectionId,
+            })
+            .getMany();
+    }
 }
