@@ -64,13 +64,13 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => subsection_entity_1.Subsection),
     (0, swagger_1.ApiProperty)({ type: subsection_entity_1.Subsection }),
     (0, typeorm_1.Column)({ nullable: true, default: null }),
-    __metadata("design:type", Number)
+    __metadata("design:type", subsection_entity_1.Subsection)
 ], Question.prototype, "subsection", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => subcategory_entity_1.Subcategory),
     (0, swagger_1.ApiProperty)({ type: subcategory_entity_1.Subcategory }),
     (0, typeorm_1.Column)({ nullable: true, default: null }),
-    __metadata("design:type", Number)
+    __metadata("design:type", subcategory_entity_1.Subcategory)
 ], Question.prototype, "subcategory", void 0);
 Question = __decorate([
     (0, typeorm_1.Entity)('questions')
