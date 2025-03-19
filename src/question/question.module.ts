@@ -5,9 +5,19 @@ import { Section } from '../section/entities/section.entity';
 import { Question } from './entities/question.entity';
 import { QuestionController } from './question.controller';
 import { QuestionService } from './question.service';
+import { Subsection } from 'src/subsection/entities/subsection.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Question, Category, Section])],
+    imports: [
+        TypeOrmModule.forFeature([
+            Question,
+            Category,
+            Section,
+            Subsection,
+            Subcategory,
+        ]),
+    ],
     controllers: [QuestionController],
     providers: [QuestionService],
 })
