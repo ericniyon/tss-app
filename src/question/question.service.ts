@@ -197,7 +197,13 @@ export class QuestionService {
         let question = await this.findOne(id);
         question = {
             ...question,
-            ...pick(updateQuestionDto, ['text', 'requiresAttachments', 'type']),
+            ...pick(updateQuestionDto, [
+                'text',
+                'requiresAttachments',
+                'type',
+                'subcategoryId',
+                'subsectionId',
+            ]),
         };
         if (updateQuestionDto.sectionId) {
             const section = await this.sectionRepo.findOne(

@@ -169,7 +169,13 @@ let QuestionService = class QuestionService {
     }
     async update(id, updateQuestionDto) {
         let question = await this.findOne(id);
-        question = Object.assign(Object.assign({}, question), pick(updateQuestionDto, ['text', 'requiresAttachments', 'type']));
+        question = Object.assign(Object.assign({}, question), pick(updateQuestionDto, [
+            'text',
+            'requiresAttachments',
+            'type',
+            'subcategoryId',
+            'subsectionId',
+        ]));
         if (updateQuestionDto.sectionId) {
             const section = await this.sectionRepo.findOne(updateQuestionDto.sectionId);
             if (!section)
