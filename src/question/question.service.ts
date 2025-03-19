@@ -35,7 +35,13 @@ export class QuestionService {
         let newQuestion = new Question();
         newQuestion = {
             ...newQuestion,
-            ...pick(createQuestionDto, ['text', 'requiresAttachments', 'type']),
+            ...pick(createQuestionDto, [
+                'text',
+                'requiresAttachments',
+                'type',
+                'subcategoryId',
+                'subsectionId',
+            ]),
         };
         if (createQuestionDto.sectionId) {
             const section = await this.sectionRepo.findOne({

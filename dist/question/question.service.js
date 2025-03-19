@@ -42,7 +42,13 @@ let QuestionService = class QuestionService {
     }
     async create(createQuestionDto) {
         let newQuestion = new question_entity_1.Question();
-        newQuestion = Object.assign(Object.assign({}, newQuestion), pick(createQuestionDto, ['text', 'requiresAttachments', 'type']));
+        newQuestion = Object.assign(Object.assign({}, newQuestion), pick(createQuestionDto, [
+            'text',
+            'requiresAttachments',
+            'type',
+            'subcategoryId',
+            'subsectionId',
+        ]));
         if (createQuestionDto.sectionId) {
             const section = await this.sectionRepo.findOne({
                 id: createQuestionDto.sectionId,
