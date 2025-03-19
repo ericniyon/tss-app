@@ -43,9 +43,9 @@ export class Question extends BaseEntity {
 
     @ManyToOne(() => Subsection)
     @ApiProperty({ type: Subsection })
-    subsection: number;
+    subsectionId: number;
 
     @ManyToOne(() => Subcategory)
     @ApiProperty({ type: Subcategory })
-    subcategory: number;
+    subcategoryId: number;
 }

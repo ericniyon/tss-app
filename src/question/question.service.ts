@@ -88,7 +88,7 @@ export class QuestionService {
                 throw new NotFoundException(
                     'Subsection not found or not active',
                 );
-            newQuestion.subsection = subsection.id;
+            newQuestion.subsectionId = subsection.id;
         }
 
         if (createQuestionDto.subcategoryId) {
@@ -99,7 +99,7 @@ export class QuestionService {
                 throw new NotFoundException(
                     'Subcategory not found or not active',
                 );
-            newQuestion.subcategory = subcategory.id;
+            newQuestion.subcategoryId = subcategory.id;
         }
 
         return await this.questionRepo.save(newQuestion);
