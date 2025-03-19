@@ -44,10 +44,10 @@ export class Question extends BaseEntity {
     @ManyToOne(() => Subsection)
     @ApiProperty({ type: Subsection })
     @Column({ nullable: true, default: null })
-    subsection: Subsection;
+    subsection: number;
 
     @ManyToOne(() => Subcategory)
     @ApiProperty({ type: Subcategory })
     @Column({ nullable: true, default: null })
-    subcategory: Subcategory;
+    subcategory: number;
 }
