@@ -80,28 +80,6 @@ export class QuestionService {
             );
         newQuestion.possibleAnswers = createQuestionDto.possibleAnswers;
 
-        if (createQuestionDto.subsectionId) {
-            const subsection = await this.subsectionRepo.findOne({
-                id: createQuestionDto.subsectionId,
-            });
-            if (!subsection)
-                throw new NotFoundException(
-                    'Subsection not found or not active',
-                );
-            newQuestion.subsectionId = subsection.id;
-        }
-
-        if (createQuestionDto.subcategoryId) {
-            const subcategory = await this.subcategoryRepo.findOne({
-                id: createQuestionDto.subcategoryId,
-            });
-            if (!subcategory)
-                throw new NotFoundException(
-                    'Subcategory not found or not active',
-                );
-            newQuestion.subcategoryId = subcategory.id;
-        }
-
         return await this.questionRepo.save(newQuestion);
     }
 
