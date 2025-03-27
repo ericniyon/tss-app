@@ -86,6 +86,28 @@ export class QuestionService {
             );
         newQuestion.possibleAnswers = createQuestionDto.possibleAnswers;
 
+        if (createQuestionDto.subsectionId) {
+            const subsection = await this.subsectionRepo.findOne({
+                id: createQuestionDto.subsectionId,
+            });
+            if (!subsection)
+                throw new NotFoundException(
+                    'Subsection not found or not active',
+                );
+            newQuestion.subsection = subsection;
+        }
+
+        if (createQuestionDto.subcategoryId) {
+            const subcategory = await this.subcategoryRepo.findOne({
+                id: createQuestionDto.subcategoryId,
+            });
+            if (!subcategory)
+                throw new NotFoundException(
+                    'Subcategory not found or not active',
+                );
+            newQuestion.subcategory = subcategory;
+        }
+
         return await this.questionRepo.save(newQuestion);
     }
 
@@ -102,11 +124,17 @@ export class QuestionService {
         queryBuilder
             .leftJoin('question.section', 'section')
             .leftJoin('question.categories', 'categories')
+            .leftJoin('question.subsection', 'subsection')
+            .leftJoin('question.subcategory', 'subcategory')
             .addSelect([
                 'section.id',
                 'section.title',
                 'categories.id',
                 'categories.name',
+                'subsection.id',
+                'subsection.name',
+                'subcategory.id',
+                'subcategory.name',
             ]);
         const { actualStartDate, actualEndDate } = getActualDateRange(
             filterOptions.dateFrom,
@@ -184,10 +212,15 @@ export class QuestionService {
     async findOne(id: number): Promise<Question> {
         const question = await this.questionRepo
             .findOne(id, {
-                relations: ['categories', 'section'],
+                relations: [
+                    'categories',
+                    'section',
+                    'subsection',
+                    'subcategory',
+                ],
             })
             .catch(() => {
-                throw new NotFoundException('Section not found');
+                throw new NotFoundException('Question not found');
             });
         if (!question) throw new NotFoundException('Question not found');
         return question;
@@ -234,6 +267,26 @@ export class QuestionService {
                     'You cannot only set custom possible answers for multiple suggestion questions',
                 );
             question.possibleAnswers = updateQuestionDto.possibleAnswers;
+        }
+        if (updateQuestionDto.subcategoryId) {
+            const subcategory = await this.subcategoryRepo.findOne(
+                updateQuestionDto.subcategoryId,
+            );
+            if (!subcategory)
+                throw new NotFoundException(
+                    'Subcategory not found or not active',
+                );
+            question.subcategory = subcategory;
+        }
+        if (updateQuestionDto.subsectionId) {
+            const subsection = await this.subsectionRepo.findOne(
+                updateQuestionDto.subsectionId,
+            );
+            if (!subsection)
+                throw new NotFoundException(
+                    'Subsection not found or not active',
+                );
+            question.subsection = subsection;
         }
 
         return await this.questionRepo.save(question);

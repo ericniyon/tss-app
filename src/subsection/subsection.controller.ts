@@ -2,6 +2,7 @@ import {
     BadRequestException,
     Body,
     Controller,
+    Delete,
     Get,
     Param,
     Post,
@@ -96,5 +97,19 @@ export class SubsectionController {
             updateSubsectionDto,
         );
         return { message: 'Subsection updated successfully', results };
+    }
+
+    @Delete('/:id')
+    @OkResponse(Subsection)
+    @Auth(Roles.DBI_ADMIN)
+    async delete(
+        @Param('id') id: number,
+    ): Promise<GenericResponse<Subsection>> {
+        if (!id) {
+            throw new BadRequestException('Subsection ID is required');
+        }
+
+        await this.subsectionService.delete(id);
+        return { message: 'Subsection deleted successfully' };
     }
 }

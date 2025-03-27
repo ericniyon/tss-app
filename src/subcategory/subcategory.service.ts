@@ -41,7 +41,10 @@ export class SubcategoryService {
      * @returns Subcategory
      */
     async findById(id: number): Promise<Subcategory> {
-        const subcategory = await this.subcategoryRepo.findOne(id);
+        const subcategory = await this.subcategoryRepo.findOne(id, {
+            relations: ['category'],
+        });
+
         if (!subcategory) {
             throw new NotFoundException(`Subcategory with ID ${id} not found`);
         }
@@ -102,5 +105,18 @@ export class SubcategoryService {
         const { items, meta } = await paginate(queryBuilder, options);
 
         return { items, ...meta };
+    }
+
+    /**
+     * @Service delete a subcategory by ID
+     * @param id subcategory ID
+     * @returns void
+     */
+    async delete(id: number): Promise<void> {
+        const subcategory = await this.findById(id);
+        if (!subcategory) {
+            throw new NotFoundException(`Subcategory with ID ${id} not found`);
+        }
+        await this.subcategoryRepo.softDelete(subcategory.id);
     }
 }
