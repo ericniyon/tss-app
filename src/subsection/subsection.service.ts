@@ -71,7 +71,9 @@ export class SubsectionService {
      * @returns Subsection
      */
     async findById(id: number): Promise<Subsection> {
-        const subsection = await this.subsectionRepo.findOne(id);
+        const subsection = await this.subsectionRepo.findOne(id, {
+            relations: ['section'],
+        });
         if (!subsection) {
             throw new NotFoundException(`Subsection with ID ${id} not found`);
         }
@@ -107,5 +109,17 @@ export class SubsectionService {
 
         Object.assign(subsection, updateSubsectionDto);
         return this.subsectionRepo.save(subsection);
+    }
+
+    /**
+     * @Service delete a subsection by ID
+     * @param id subsection ID
+     */
+    async delete(id: number): Promise<void> {
+        const subsection = await this.findById(id);
+        if (!subsection) {
+            throw new NotFoundException(`Subsection with ID ${id} not found`);
+        }
+        await this.subsectionRepo.softDelete(subsection.id);
     }
 }

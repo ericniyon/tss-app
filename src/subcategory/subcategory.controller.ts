@@ -2,6 +2,7 @@ import {
     BadRequestException,
     Body,
     Controller,
+    Delete,
     Get,
     Param,
     Post,
@@ -98,5 +99,15 @@ export class SubcategoryController {
             message: 'Subcategory updated successfully',
             results,
         };
+    }
+
+    @Delete('/:id')
+    @OkResponse(Subcategory)
+    @Auth(Roles.DBI_ADMIN)
+    async delete(
+        @Param('id') id: number,
+    ): Promise<GenericResponse<Subcategory>> {
+        await this.subcategoryService.delete(id);
+        return { message: 'Subcategory deleted successfully' };
     }
 }

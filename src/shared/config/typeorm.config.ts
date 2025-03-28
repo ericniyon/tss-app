@@ -11,7 +11,7 @@ const typeOrmConfig: TypeOrmModuleOptions = {
     type: 'postgres',
     synchronize: isRunningInDevelopment(),
     // synchronize: false,
-    dropSchema: isRunningInDevelopment(),
+    // dropSchema: isRunningInDevelopment(),
     keepConnectionAlive: true,
     logging: isRunningInDevelopment(),
     entities: ['dist/**/*.entity.js'],
@@ -20,11 +20,11 @@ const typeOrmConfig: TypeOrmModuleOptions = {
     migrations: ['dist/db/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/db/migrations' },
     migrationsRun: !isRunningInDevelopment(),
-    extra: {
-        ssl: {
-            rejectUnauthorized: false,
-        },
-    },
+    // extra: {
+    //     ssl: {
+    //         rejectUnauthorized: false,
+    //     },
+    // },
 };
 
 export default typeOrmConfig;
