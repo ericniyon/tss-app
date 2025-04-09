@@ -28,4 +28,8 @@ export class Section extends BaseEntity {
     @Column({ default: 1 })
     @ApiProperty()
     sectionCategory: number;
+
+    @Column()
+    @ApiProperty()
+    subcategoryId: number;
 }
