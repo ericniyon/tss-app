@@ -129,10 +129,14 @@ export class ApplicationController {
     @Get('export-answers')
     async exportAllAnswers(
         @Query('category') categoryId: string,
+        @Query('year') year: string,
         @Res() res: Response,
     ): Promise<GenericResponse<any>> {
         const { fileName, buffer } =
-            await this.applicationService.exportAllAnswersToExcel(+categoryId);
+            await this.applicationService.exportAllAnswersToExcel(
+                +categoryId,
+                +year,
+            );
 
         const stream = createReadableStream(buffer);
 

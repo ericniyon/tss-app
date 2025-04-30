@@ -652,7 +652,10 @@ export class ApplicationService {
         await this.applicationRepo.softDelete(id);
     }
 
-    async exportAllAnswersToExcel(categoryId?: number): Promise<{
+    async exportAllAnswersToExcel(
+        categoryId?: number,
+        year?: number,
+    ): Promise<{
         fileName: string;
         buffer: any;
     }> {
@@ -668,6 +671,15 @@ export class ApplicationService {
             .leftJoinAndSelect('question.section', 'section');
         if (categoryId) {
             query.andWhere('category.id = :categoryId', { categoryId });
+        }
+        if (year) {
+            // between from and to dates
+            const startDate = new Date(`${year}-01-01`);
+            const endDate = new Date(`${year}-12-31`);
+            query.andWhere('answer.createdAt BETWEEN :startDate AND :endDate', {
+                startDate,
+                endDate,
+            });
         }
         const answers = await query
             .orderBy('category.name')
