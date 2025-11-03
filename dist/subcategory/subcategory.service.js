@@ -30,7 +30,9 @@ let SubcategoryService = class SubcategoryService {
         return this.subcategoryRepo.save(Object.assign({}, createSubcategoryDto));
     }
     async findById(id) {
-        const subcategory = await this.subcategoryRepo.findOne(id);
+        const subcategory = await this.subcategoryRepo.findOne(id, {
+            relations: ['category'],
+        });
         if (!subcategory) {
             throw new common_1.NotFoundException(`Subcategory with ID ${id} not found`);
         }
@@ -61,6 +63,13 @@ let SubcategoryService = class SubcategoryService {
         queryBuilder.orderBy('subcategory.createdAt', 'DESC');
         const { items, meta } = await (0, nestjs_typeorm_paginate_1.paginate)(queryBuilder, options);
         return Object.assign({ items }, meta);
+    }
+    async delete(id) {
+        const subcategory = await this.findById(id);
+        if (!subcategory) {
+            throw new common_1.NotFoundException(`Subcategory with ID ${id} not found`);
+        }
+        await this.subcategoryRepo.softDelete(subcategory.id);
     }
 };
 SubcategoryService = __decorate([

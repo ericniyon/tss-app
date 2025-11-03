@@ -62,8 +62,8 @@ let ApplicationController = class ApplicationController {
             results: await this.applicationService.findQuestions(+categoryId),
         };
     }
-    async exportAllAnswers(categoryId, res) {
-        const { fileName, buffer } = await this.applicationService.exportAllAnswersToExcel(+categoryId);
+    async exportAllAnswers(categoryId, year, res) {
+        const { fileName, buffer } = await this.applicationService.exportAllAnswersToExcel(+categoryId, +year);
         const stream = (0, file_util_1.createReadableStream)(buffer);
         res.set({
             'Content-Type': 'application/vnd.openxmlIdformats-officedocument.spreadsheetml.sheet',
@@ -189,9 +189,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('export-answers'),
     __param(0, (0, common_1.Query)('category')),
-    __param(1, (0, common_1.Res)()),
+    __param(1, (0, common_1.Query)('year')),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ApplicationController.prototype, "exportAllAnswers", null);
 __decorate([

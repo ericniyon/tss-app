@@ -12,4 +12,5 @@ export declare class SubcategoryController {
     findAll(options: IPagination, filterOptions: SubcategoryFilterOptions): Promise<GenericResponse<IPage<Subcategory>>>;
     findById(id: number): Promise<GenericResponse<Subcategory>>;
     update(id: number, updateSubcategoryDto: UpdateSubcategoryDto): Promise<GenericResponse<Subcategory>>;
+    delete(id: number): Promise<GenericResponse<Subcategory>>;
 }

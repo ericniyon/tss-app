@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateSectionDto {
     @ApiProperty()
@@ -11,4 +11,9 @@ export class CreateSectionDto {
     @ApiProperty()
     @IsNotEmpty({ message: 'Section category is required' })
     sectionCategory: number;
+
+    @ApiProperty({ required: false, nullable: true })
+    @IsOptional()
+    @IsBoolean()
+    isMandatory?: boolean;
 }

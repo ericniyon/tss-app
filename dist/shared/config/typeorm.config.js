@@ -10,7 +10,6 @@ const typeOrmConfig = {
     database: process.env.POSTGRES_DB,
     type: 'postgres',
     synchronize: (0, env_util_1.isRunningInDevelopment)(),
-    dropSchema: (0, env_util_1.isRunningInDevelopment)(),
     keepConnectionAlive: true,
     logging: (0, env_util_1.isRunningInDevelopment)(),
     entities: ['dist/**/*.entity.js'],
@@ -19,11 +18,6 @@ const typeOrmConfig = {
     migrations: ['dist/db/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/db/migrations' },
     migrationsRun: !(0, env_util_1.isRunningInDevelopment)(),
-    extra: {
-        ssl: {
-            rejectUnauthorized: false,
-        },
-    },
 };
 exports.default = typeOrmConfig;
 //# sourceMappingURL=typeorm.config.js.map

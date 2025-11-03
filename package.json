@@ -67,7 +67,8 @@
     "rxjs": "^7",
     "swagger-ui-express": "^4.3.0",
     "typeorm": "^0.2.41",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@faker-js/faker": "^6.3.1",

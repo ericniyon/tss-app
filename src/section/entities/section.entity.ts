@@ -32,4 +32,8 @@ export class Section extends BaseEntity {
     @Column()
     @ApiProperty()
     subcategoryId: number;
+
+    @Column({ nullable: true })
+    @ApiProperty()
+    isMandatory: boolean;
 }

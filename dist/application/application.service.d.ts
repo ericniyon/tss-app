@@ -50,7 +50,7 @@ export declare class ApplicationService {
     reviewAnswers(id: number, dto: ReviewAnswersDto): Promise<void>;
     submit(id: number, user: User): Promise<void>;
     remove(id: number): Promise<void>;
-    exportAllAnswersToExcel(categoryId?: number): Promise<{
+    exportAllAnswersToExcel(categoryId?: number, year?: number): Promise<{
         fileName: string;
         buffer: any;
     }>;

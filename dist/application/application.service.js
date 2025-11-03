@@ -492,7 +492,7 @@ let ApplicationService = class ApplicationService {
         await this.findOne({ where: { id } });
         await this.applicationRepo.softDelete(id);
     }
-    async exportAllAnswersToExcel(categoryId) {
+    async exportAllAnswersToExcel(categoryId, year) {
         common_1.Logger.log('Exporting all answers to Excel started');
         const query = this.answerRepo
             .createQueryBuilder('answer')
@@ -503,6 +503,14 @@ let ApplicationService = class ApplicationService {
             .leftJoinAndSelect('question.section', 'section');
         if (categoryId) {
             query.andWhere('category.id = :categoryId', { categoryId });
+        }
+        if (year) {
+            const startDate = new Date(`${year}-01-01`);
+            const endDate = new Date(`${year}-12-31`);
+            query.andWhere('answer.createdAt BETWEEN :startDate AND :endDate', {
+                startDate,
+                endDate,
+            });
         }
         const answers = await query
             .orderBy('category.name')

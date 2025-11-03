@@ -12,4 +12,5 @@ export declare class SubsectionController {
     findAll(options: IPagination, filterOptions: SubsectionFilterOptions): Promise<GenericResponse<IPage<Subsection>>>;
     findById(id: number): Promise<GenericResponse<Subsection>>;
     update(id: number, updateSubsectionDto: UpdateSubsectionDto): Promise<GenericResponse<Subsection>>;
+    delete(id: number): Promise<GenericResponse<Subsection>>;
 }

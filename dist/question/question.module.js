@@ -14,11 +14,21 @@ const section_entity_1 = require("../section/entities/section.entity");
 const question_entity_1 = require("./entities/question.entity");
 const question_controller_1 = require("./question.controller");
 const question_service_1 = require("./question.service");
+const subsection_entity_1 = require("../subsection/entities/subsection.entity");
+const subcategory_entity_1 = require("../subcategory/entities/subcategory.entity");
 let QuestionModule = class QuestionModule {
 };
 QuestionModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([question_entity_1.Question, category_entity_1.Category, section_entity_1.Section])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([
+                question_entity_1.Question,
+                category_entity_1.Category,
+                section_entity_1.Section,
+                subsection_entity_1.Subsection,
+                subcategory_entity_1.Subcategory,
+            ]),
+        ],
         controllers: [question_controller_1.QuestionController],
         providers: [question_service_1.QuestionService],
     })

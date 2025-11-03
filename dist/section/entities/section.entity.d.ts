@@ -7,4 +7,6 @@ export declare class Section extends BaseEntity {
     readonly: boolean;
     questions: Question[];
     sectionCategory: number;
+    subcategoryId: number;
+    isMandatory: boolean;
 }

@@ -7,11 +7,15 @@ import { CreateQuestionDto } from './dto/create-question.dto';
 import { QuestionFilterOptionsDto } from './dto/question-filter-options.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question } from './entities/question.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
+import { Subsection } from 'src/subsection/entities/subsection.entity';
 export declare class QuestionService {
     private readonly questionRepo;
     private readonly sectionRepo;
     private readonly categoryRepo;
-    constructor(questionRepo: Repository<Question>, sectionRepo: Repository<Section>, categoryRepo: Repository<Category>);
+    private readonly subsectionRepo;
+    private readonly subcategoryRepo;
+    constructor(questionRepo: Repository<Question>, sectionRepo: Repository<Section>, categoryRepo: Repository<Category>, subsectionRepo: Repository<Subsection>, subcategoryRepo: Repository<Subcategory>);
     create(createQuestionDto: CreateQuestionDto): Promise<Question>;
     findAll(options: IPagination, role: Roles, { sort, ...filterOptions }: QuestionFilterOptionsDto): Promise<IPage<Question>>;
     findOne(id: number): Promise<Question>;

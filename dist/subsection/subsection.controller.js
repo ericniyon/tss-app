@@ -55,6 +55,13 @@ let SubsectionController = class SubsectionController {
         const results = await this.subsectionService.update(id, updateSubsectionDto);
         return { message: 'Subsection updated successfully', results };
     }
+    async delete(id) {
+        if (!id) {
+            throw new common_1.BadRequestException('Subsection ID is required');
+        }
+        await this.subsectionService.delete(id);
+        return { message: 'Subsection deleted successfully' };
+    }
 };
 __decorate([
     (0, common_1.Post)(),
@@ -92,6 +99,15 @@ __decorate([
     __metadata("design:paramtypes", [Number, update_subsection_dto_1.UpdateSubsectionDto]),
     __metadata("design:returntype", Promise)
 ], SubsectionController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)('/:id'),
+    (0, decorators_1.OkResponse)(subsection_entity_1.Subsection),
+    (0, auth_decorator_1.Auth)(roles_enum_1.Roles.DBI_ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], SubsectionController.prototype, "delete", null);
 SubsectionController = __decorate([
     (0, common_1.Controller)('subsections'),
     (0, swagger_1.ApiTags)('Subsections'),

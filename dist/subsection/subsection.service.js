@@ -43,7 +43,9 @@ let SubsectionService = class SubsectionService {
         return Object.assign({ items }, meta);
     }
     async findById(id) {
-        const subsection = await this.subsectionRepo.findOne(id);
+        const subsection = await this.subsectionRepo.findOne(id, {
+            relations: ['section'],
+        });
         if (!subsection) {
             throw new common_1.NotFoundException(`Subsection with ID ${id} not found`);
         }
@@ -62,6 +64,13 @@ let SubsectionService = class SubsectionService {
         }
         Object.assign(subsection, updateSubsectionDto);
         return this.subsectionRepo.save(subsection);
+    }
+    async delete(id) {
+        const subsection = await this.findById(id);
+        if (!subsection) {
+            throw new common_1.NotFoundException(`Subsection with ID ${id} not found`);
+        }
+        await this.subsectionRepo.softDelete(subsection.id);
     }
 };
 SubsectionService = __decorate([

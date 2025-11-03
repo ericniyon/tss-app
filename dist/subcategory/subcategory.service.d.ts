@@ -10,4 +10,5 @@ export declare class SubcategoryService {
     findById(id: number): Promise<Subcategory>;
     update(id: number, updateSubcategoryDto: UpdateSubcategoryDto): Promise<Subcategory>;
     findAll(options: IPagination, filterOptions: SubcategoryFilterOptions): Promise<IPage<Subcategory>>;
+    delete(id: number): Promise<void>;
 }

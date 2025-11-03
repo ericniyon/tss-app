@@ -29,5 +29,11 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'Section category is required' }),
     __metadata("design:type", Number)
 ], CreateSectionDto.prototype, "sectionCategory", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CreateSectionDto.prototype, "isMandatory", void 0);
 exports.CreateSectionDto = CreateSectionDto;
 //# sourceMappingURL=create-section.dto.js.map

@@ -45,6 +45,16 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], Section.prototype, "sectionCategory", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], Section.prototype, "subcategoryId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], Section.prototype, "isMandatory", void 0);
 Section = __decorate([
     (0, typeorm_1.Entity)('sections')
 ], Section);

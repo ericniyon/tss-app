@@ -11,4 +11,5 @@ export declare class SubsectionService {
     findAll(options: IPagination, filterOptions: SubsectionFilterOptions): Promise<IPage<Subsection>>;
     findById(id: number): Promise<Subsection>;
     update(id: number, updateSubsectionDto: UpdateSubsectionDto): Promise<Subsection>;
+    delete(id: number): Promise<void>;
 }

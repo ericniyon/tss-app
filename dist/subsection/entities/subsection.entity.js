@@ -26,6 +26,11 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], Subsection.prototype, "section", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: true, nullable: false }),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], Subsection.prototype, "active", void 0);
 Subsection = __decorate([
     (0, typeorm_1.Entity)('subsections')
 ], Subsection);

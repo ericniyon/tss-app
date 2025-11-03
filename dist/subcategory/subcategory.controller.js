@@ -58,6 +58,10 @@ let SubcategoryController = class SubcategoryController {
             results,
         };
     }
+    async delete(id) {
+        await this.subcategoryService.delete(id);
+        return { message: 'Subcategory deleted successfully' };
+    }
 };
 __decorate([
     (0, common_1.Post)(),
@@ -96,6 +100,15 @@ __decorate([
     __metadata("design:paramtypes", [Number, update_subcategory_dto_1.UpdateSubcategoryDto]),
     __metadata("design:returntype", Promise)
 ], SubcategoryController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)('/:id'),
+    (0, decorators_1.OkResponse)(subcategory_entity_1.Subcategory),
+    (0, auth_decorator_1.Auth)(roles_enum_1.Roles.DBI_ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], SubcategoryController.prototype, "delete", null);
 SubcategoryController = __decorate([
     (0, common_1.Controller)('subcategories'),
     (0, swagger_1.ApiTags)('Subcategories'),

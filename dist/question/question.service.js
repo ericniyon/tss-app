@@ -34,11 +34,15 @@ const roles_enum_1 = require("../shared/enums/roles.enum");
 const date_util_1 = require("../shared/utils/date.util");
 const question_entity_1 = require("./entities/question.entity");
 const enums_1 = require("./enums");
+const subcategory_entity_1 = require("../subcategory/entities/subcategory.entity");
+const subsection_entity_1 = require("../subsection/entities/subsection.entity");
 let QuestionService = class QuestionService {
-    constructor(questionRepo, sectionRepo, categoryRepo) {
+    constructor(questionRepo, sectionRepo, categoryRepo, subsectionRepo, subcategoryRepo) {
         this.questionRepo = questionRepo;
         this.sectionRepo = sectionRepo;
         this.categoryRepo = categoryRepo;
+        this.subsectionRepo = subsectionRepo;
+        this.subcategoryRepo = subcategoryRepo;
     }
     async create(createQuestionDto) {
         let newQuestion = new question_entity_1.Question();
@@ -49,6 +53,7 @@ let QuestionService = class QuestionService {
             'subcategoryId',
             'subsectionId',
         ]));
+        common_1.Logger.log(newQuestion);
         if (createQuestionDto.sectionId) {
             const section = await this.sectionRepo.findOne({
                 id: createQuestionDto.sectionId,
@@ -72,6 +77,22 @@ let QuestionService = class QuestionService {
                 newQuestion.type === enums_1.EType.SINGLE_CHOICE))
             throw new common_1.BadRequestException('Possible answers are required for multiple suggestion questions');
         newQuestion.possibleAnswers = createQuestionDto.possibleAnswers;
+        if (createQuestionDto.subsectionId) {
+            const subsection = await this.subsectionRepo.findOne({
+                id: createQuestionDto.subsectionId,
+            });
+            if (!subsection)
+                throw new common_1.NotFoundException('Subsection not found or not active');
+            newQuestion.subsection = subsection;
+        }
+        if (createQuestionDto.subcategoryId) {
+            const subcategory = await this.subcategoryRepo.findOne({
+                id: createQuestionDto.subcategoryId,
+            });
+            if (!subcategory)
+                throw new common_1.NotFoundException('Subcategory not found or not active');
+            newQuestion.subcategory = subcategory;
+        }
         return await this.questionRepo.save(newQuestion);
     }
     async findAll(options, role, _a) {
@@ -158,10 +179,15 @@ let QuestionService = class QuestionService {
     async findOne(id) {
         const question = await this.questionRepo
             .findOne(id, {
-            relations: ['categories', 'section'],
+            relations: [
+                'categories',
+                'section',
+                'subsection',
+                'subcategory',
+            ],
         })
             .catch(() => {
-            throw new common_1.NotFoundException('Section not found');
+            throw new common_1.NotFoundException('Question not found');
         });
         if (!question)
             throw new common_1.NotFoundException('Question not found');
@@ -199,6 +225,18 @@ let QuestionService = class QuestionService {
             if (question.type === enums_1.EType.OPEN)
                 throw new common_1.BadRequestException('You cannot only set custom possible answers for multiple suggestion questions');
             question.possibleAnswers = updateQuestionDto.possibleAnswers;
+        }
+        if (updateQuestionDto.subcategoryId) {
+            const subcategory = await this.subcategoryRepo.findOne(updateQuestionDto.subcategoryId);
+            if (!subcategory)
+                throw new common_1.NotFoundException('Subcategory not found or not active');
+            question.subcategory = subcategory;
+        }
+        if (updateQuestionDto.subsectionId) {
+            const subsection = await this.subsectionRepo.findOne(updateQuestionDto.subsectionId);
+            if (!subsection)
+                throw new common_1.NotFoundException('Subsection not found or not active');
+            question.subsection = subsection;
         }
         return await this.questionRepo.save(question);
     }
@@ -244,7 +282,11 @@ QuestionService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(question_entity_1.Question)),
     __param(1, (0, typeorm_1.InjectRepository)(section_entity_1.Section)),
     __param(2, (0, typeorm_1.InjectRepository)(category_entity_1.Category)),
+    __param(3, (0, typeorm_1.InjectRepository)(subsection_entity_1.Subsection)),
+    __param(4, (0, typeorm_1.InjectRepository)(subcategory_entity_1.Subcategory)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository])
 ], QuestionService);
