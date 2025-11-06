@@ -103,17 +103,17 @@ export class SectionService {
         updateSectionDto: UpdateSectionDto,
     ): Promise<Section> {
         let section = await this.findOne(id);
-        if (
-            await this.sectionRepo.findOne({
-                where: {
-                    id: Not(section.id),
-                    title: ILike(updateSectionDto?.title),
-                },
-            })
-        )
-            throw new ConflictException(
-                'Section with the same name already exists n',
-            );
+        // if (
+        //     await this.sectionRepo.findOne({
+        //         where: {
+        //             id: Not(section.id),
+        //             title: ILike(updateSectionDto?.title),
+        //         },
+        //     })
+        // )
+        //     throw new ConflictException(
+        //         'Section with the same name already exists n',
+        //     );
         section = { ...section, ...updateSectionDto };
         return await this.sectionRepo.save(section);
     }

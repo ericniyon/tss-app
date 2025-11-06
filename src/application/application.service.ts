@@ -647,6 +647,36 @@ export class ApplicationService {
         }
     }
 
+    async joinInterview(applicationId: number, user: User): Promise<void> {
+        try {
+            const application = await this.findOne({
+                where: { id: applicationId },
+            });
+
+            if (user.id !== application.applicant.id) {
+                throw new BadRequestException(
+                    "You cannot join an interview for someone else's application",
+                );
+            }
+
+            if (
+                application.status !== EApplicationStatus.FIRST_STAGE_PASSED &&
+                application.status !== EApplicationStatus.SUBMITTED
+            ) {
+                throw new BadRequestException(
+                    'Interview is only available for applications that have passed the first stage or have been submitted',
+                );
+            }
+
+            Logger.log(
+                `User ${user.id} joined interview for application ${applicationId}`,
+            );
+        } catch (error) {
+            Logger.error(error);
+            throw error;
+        }
+    }
+
     async remove(id: number): Promise<void> {
         await this.findOne({ where: { id } });
         await this.applicationRepo.softDelete(id);

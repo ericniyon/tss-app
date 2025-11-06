@@ -153,6 +153,17 @@ export class ApplicationController {
     }
 
     @Auth()
+    @Post('join-interview')
+    @OkResponse()
+    async joinInterview(
+        @Body('applicationId', ParseIntPipe) applicationId: number,
+        @GetUser() user: User,
+    ): Promise<GenericResponse<void>> {
+        await this.applicationService.joinInterview(applicationId, user);
+        return { message: 'Successfully joined interview' };
+    }
+
+    @Auth()
     @Get(':id')
     @OkResponse(ApplicationResponseDto)
     async findOne(
