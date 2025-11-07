@@ -5,4 +5,6 @@ import { CommonFilterOptionsDto } from '../../shared/dto/common-filter-options.d
 export class SectionFilterOptionsDto extends CommonFilterOptionsDto {
     @OptionalProperty({ enum: EStatus })
     status?: EStatus;
+    @OptionalProperty()
+    subcategoryId?: number;
 }

@@ -73,6 +73,11 @@ export class SectionService {
                     active: false,
                 });
         }
+        if (filterOptions.subcategoryId && !isNaN(filterOptions.subcategoryId)) {
+            queryBuilder.andWhere('s.subcategoryId = :subcategoryId', {
+                subcategoryId: filterOptions.subcategoryId,
+            });
+        }
         if (sort) {
             queryBuilder.orderBy(
                 sort.split('__')[0] === 'NAME' ? 's.title' : 's.createdAt',
