@@ -30,6 +30,13 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateSectionDto.prototype, "sectionCategory", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Subcategory ID is required' }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsPositive)(),
+    __metadata("design:type", Number)
+], CreateSectionDto.prototype, "subcategoryId", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ required: false, nullable: true }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),

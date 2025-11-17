@@ -75,6 +75,10 @@ let ApplicationController = class ApplicationController {
             message: 'Answers downloaded',
         };
     }
+    async joinInterview(applicationId, user) {
+        await this.applicationService.joinInterview(applicationId, user);
+        return { message: 'Successfully joined interview' };
+    }
     async findOne(id) {
         return {
             message: 'Application retrieved successfully',
@@ -195,6 +199,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ApplicationController.prototype, "exportAllAnswers", null);
+__decorate([
+    (0, auth_decorator_1.Auth)(),
+    (0, common_1.Post)('join-interview'),
+    (0, decorators_1.OkResponse)(),
+    __param(0, (0, common_1.Body)('applicationId', common_1.ParseIntPipe)),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, user_entity_1.User]),
+    __metadata("design:returntype", Promise)
+], ApplicationController.prototype, "joinInterview", null);
 __decorate([
     (0, auth_decorator_1.Auth)(),
     (0, common_1.Get)(':id'),

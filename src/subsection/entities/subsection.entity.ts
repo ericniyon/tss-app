@@ -11,7 +11,7 @@ export class Subsection extends BaseEntity {
 
     @ManyToOne(() => Section)
     @ApiProperty()
-    section: number;
+    section: Section;
 
     @Column({ default: true, nullable: false })
     @ApiProperty()

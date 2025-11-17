@@ -11,5 +11,4 @@ export class Category extends BaseEntity {
     @Column({ default: true, nullable: false })
     @ApiProperty()
     active: boolean;
-    applications: any;
 }

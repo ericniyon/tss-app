@@ -3,7 +3,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { Not, Repository } from 'typeorm/index.js';
+import { Repository } from 'typeorm/index.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Subsection } from './entities/subsection.entity';
 import { CreateSubsectionDto } from './dto/create-subsection.dto';
@@ -11,12 +11,15 @@ import { IPage, IPagination } from '../shared/interfaces/page.interface';
 import { SubsectionFilterOptions } from './dto/subsection-filter-option';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { UpdateSubsectionDto } from './dto/update-subsection.dto';
+import { Section } from '../section/entities/section.entity';
 
 @Injectable()
 export class SubsectionService {
     constructor(
         @InjectRepository(Subsection)
         private readonly subsectionRepo: Repository<Subsection>,
+        @InjectRepository(Section)
+        private readonly sectionRepo: Repository<Section>,
     ) {}
 
     /**
@@ -27,17 +30,36 @@ export class SubsectionService {
     async create(
         createSubsectionDto: CreateSubsectionDto,
     ): Promise<Subsection> {
-        if (
-            await this.subsectionRepo.count({
-                name: createSubsectionDto.name,
-            })
-        ) {
-            throw new ConflictException(
-                'Subsection with the same name already exists',
+        // Load and validate the section exists
+        const section = await this.sectionRepo.findOne({
+            id: createSubsectionDto.section,
+        });
+        if (!section) {
+            throw new NotFoundException(
+                `Section with ID ${createSubsectionDto.section} not found`,
             );
         }
 
-        return this.subsectionRepo.save({ ...createSubsectionDto });
+        // Check if subsection with same name already exists in this section
+        const existingSubsection = await this.subsectionRepo
+            .createQueryBuilder('subsection')
+            .where('subsection.name = :name', { name: createSubsectionDto.name })
+            .andWhere('subsection.section = :sectionId', {
+                sectionId: createSubsectionDto.section,
+            })
+            .getOne();
+
+        if (existingSubsection) {
+            throw new ConflictException(
+                'Subsection with the same name already exists in this section',
+            );
+        }
+
+        const subsection = new Subsection();
+        subsection.name = createSubsectionDto.name;
+        subsection.section = section;
+
+        return this.subsectionRepo.save(subsection);
     }
 
     /**
@@ -90,24 +112,49 @@ export class SubsectionService {
         id: number,
         updateSubsectionDto: UpdateSubsectionDto,
     ): Promise<Subsection> {
-        // Check if the new subsection name already exists
-        if (
-            await this.subsectionRepo.count({
-                name: updateSubsectionDto.name,
-                id: Not(id),
-            })
-        ) {
-            throw new ConflictException(
-                'Subsection with the same name already exists',
-            );
-        }
-
         const subsection = await this.findById(id);
         if (!subsection) {
             throw new NotFoundException(`Subsection with ID ${id} not found`);
         }
 
-        Object.assign(subsection, updateSubsectionDto);
+        // If section is being updated, validate it exists
+        let section = subsection.section;
+        if (updateSubsectionDto.section) {
+            section = await this.sectionRepo.findOne({
+                id: updateSubsectionDto.section,
+            });
+            if (!section) {
+                throw new NotFoundException(
+                    `Section with ID ${updateSubsectionDto.section} not found`,
+                );
+            }
+        }
+
+        // If name is being updated, check uniqueness within the section
+        const sectionId = updateSubsectionDto.section || subsection.section.id;
+        if (updateSubsectionDto.name) {
+            const existingSubsection = await this.subsectionRepo
+                .createQueryBuilder('subsection')
+                .where('subsection.name = :name', { name: updateSubsectionDto.name })
+                .andWhere('subsection.section = :sectionId', { sectionId })
+                .andWhere('subsection.id != :id', { id })
+                .getOne();
+
+            if (existingSubsection) {
+                throw new ConflictException(
+                    'Subsection with the same name already exists in this section',
+                );
+            }
+        }
+
+        // Update subsection properties
+        if (updateSubsectionDto.name) {
+            subsection.name = updateSubsectionDto.name;
+        }
+        if (updateSubsectionDto.section) {
+            subsection.section = section;
+        }
+
         return this.subsectionRepo.save(subsection);
     }
 

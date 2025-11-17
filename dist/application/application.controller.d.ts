@@ -23,6 +23,7 @@ export declare class ApplicationController {
     }>>;
     findQuestions(categoryId: string): Promise<GenericResponse<Question[]>>;
     exportAllAnswers(categoryId: string, year: string, res: Response): Promise<GenericResponse<any>>;
+    joinInterview(applicationId: number, user: User): Promise<GenericResponse<void>>;
     findOne(id: string): Promise<GenericResponse<Application>>;
     updateStatus(id: string, updateStatusDto: UpdateApplicationStatusDto): Promise<GenericResponse<Application>>;
     updateAnswerStatus(id: string, updateAnswerStatusDto: UpdateAnswerStatusDto): Promise<GenericResponse<void>>;

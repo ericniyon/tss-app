@@ -19,5 +19,9 @@ __decorate([
     (0, decorators_1.OptionalProperty)({ enum: enums_1.EStatus }),
     __metadata("design:type", String)
 ], SectionFilterOptionsDto.prototype, "status", void 0);
+__decorate([
+    (0, decorators_1.OptionalProperty)(),
+    __metadata("design:type", Number)
+], SectionFilterOptionsDto.prototype, "subcategoryId", void 0);
 exports.SectionFilterOptionsDto = SectionFilterOptionsDto;
 //# sourceMappingURL=section-filter-options.dto.js.map

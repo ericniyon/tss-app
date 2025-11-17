@@ -64,6 +64,11 @@ let SectionService = class SectionService {
                     active: false,
                 });
         }
+        if (filterOptions.subcategoryId && !isNaN(filterOptions.subcategoryId)) {
+            queryBuilder.andWhere('s.subcategoryId = :subcategoryId', {
+                subcategoryId: filterOptions.subcategoryId,
+            });
+        }
         if (sort) {
             queryBuilder.orderBy(sort.split('__')[0] === 'NAME' ? 's.title' : 's.createdAt', sort.split('__')[1] === 'ASC' ? 'ASC' : 'DESC');
         }
@@ -78,13 +83,6 @@ let SectionService = class SectionService {
     }
     async update(id, updateSectionDto) {
         let section = await this.findOne(id);
-        if (await this.sectionRepo.findOne({
-            where: {
-                id: (0, typeorm_2.Not)(section.id),
-                title: (0, typeorm_2.ILike)(updateSectionDto === null || updateSectionDto === void 0 ? void 0 : updateSectionDto.title),
-            },
-        }))
-            throw new common_1.ConflictException('Section with the same name already exists n');
         section = Object.assign(Object.assign({}, section), updateSectionDto);
         return await this.sectionRepo.save(section);
     }
