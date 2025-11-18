@@ -35,6 +35,7 @@ import { UsersModule } from './users/users.module';
 import { PaymentModule } from './payment/payment.module';
 import { SubcategoryModule } from './subcategory/subcategory.module';
 import { SubsectionModule } from './subsection/subsection.module';
+import { SendGridService } from './notification/sendgrid.service';
 
 @Module({
     imports: [
@@ -69,6 +70,7 @@ import { SubsectionModule } from './subsection/subsection.module';
         { provide: APP_INTERCEPTOR, useClass: ResponseTransformInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
         AppService,
+        SendGridService,
         UserSeedService,
         QuestionSeedService,
         CategorySeedService,

@@ -26,7 +26,8 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config src/shared/config/typeorm.config.ts",
     "typeorm:create": "yarn typeorm migration:create -n",
     "typeorm:sync": "yarn build && yarn typeorm migration:generate -n",
-    "typeorm:run": "yarn build && yarn typeorm migration:run"
+    "typeorm:run": "yarn build && yarn typeorm migration:run",
+    "test:email": "ts-node -r tsconfig-paths/register scripts/test-email.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^0.0.7",
