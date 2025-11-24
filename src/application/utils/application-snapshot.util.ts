@@ -1,11 +1,13 @@
 import { Application } from '../entities/application.entity';
 import { Answer } from '../entities/answer.entity';
+import { Subcategory } from '../../subcategory/entities/subcategory.entity';
 
 type SnapshotSection = {
     id: number;
     title: string;
     tips: string;
     subcategoryId?: number;
+    subcategory?: { id: number; name: string };
     sectionCategory?: number;
     answers: SnapshotAnswer[];
 };
@@ -27,6 +29,7 @@ export type SnapshotAnswer = {
             title: string;
             tips: string;
             subcategoryId?: number;
+            subcategory?: { id: number; name: string };
             sectionCategory?: number;
         };
     };
@@ -76,21 +79,51 @@ const sanitizeAnswer = (answer: Answer): SnapshotAnswer => ({
 
 export const buildApplicationSnapshotPayload = (
     application: Application,
+    subcategories?: Subcategory[],
 ): ApplicationSnapshotPayload => {
     const sanitizedAnswers = (application.answers || []).map((answer) =>
         sanitizeAnswer(answer),
     );
 
+    const subcategoriesMap = new Map<number, Subcategory>();
+    if (subcategories) {
+        subcategories.forEach((subcat) => {
+            subcategoriesMap.set(subcat.id, subcat);
+        });
+    }
+
+    // Enrich answers with subcategory information
+    const enrichedAnswers = sanitizedAnswers.map((answer) => {
+        if (answer.question?.section?.subcategoryId) {
+            const subcategory = subcategoriesMap.get(
+                answer.question.section.subcategoryId,
+            );
+            if (subcategory && answer.question.section) {
+                answer.question.section.subcategory = {
+                    id: subcategory.id,
+                    name: subcategory.name,
+                };
+            }
+        }
+        return answer;
+    });
+
     const sectionsMap = new Map<number, SnapshotSection>();
-    sanitizedAnswers.forEach((answer) => {
+    enrichedAnswers.forEach((answer) => {
         const section = answer.question?.section;
         if (!section) return;
         if (!sectionsMap.has(section.id)) {
+            const subcategory = section.subcategoryId
+                ? subcategoriesMap.get(section.subcategoryId)
+                : undefined;
             sectionsMap.set(section.id, {
                 id: section.id,
                 title: section.title,
                 tips: section.tips,
                 subcategoryId: section.subcategoryId,
+                subcategory: subcategory
+                    ? { id: subcategory.id, name: subcategory.name }
+                    : undefined,
                 sectionCategory: section.sectionCategory,
                 answers: [],
             });

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { Application } from '../application/entities/application.entity';
 import { ApplicationSnapshot } from '../application/entities/application-snapshot.entity';
 import { EApplicationStatus } from '../application/enums';
@@ -10,6 +10,7 @@ import { buildApplicationSnapshotPayload } from '../application/utils/applicatio
 import { SendGridService } from '../notification/sendgrid.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { EPaymentType } from '../payment/enums/payment-type.enum';
+import { Subcategory } from '../subcategory/entities/subcategory.entity';
 import { Roles } from '../shared/enums/roles.enum';
 import { IPage, IPagination } from '../shared/interfaces/page.interface';
 import { CertificateStatusUpdateEmailTemplate } from '../shared/templates/certificate-status-update.email';
@@ -34,6 +35,8 @@ export class CertificateService {
         private readonly paymentRepo: Repository<Payment>,
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
+        @InjectRepository(Subcategory)
+        private readonly subcategoryRepo: Repository<Subcategory>,
     ) {}
     async findAll(
         user: User,
@@ -187,8 +190,26 @@ export class CertificateService {
         if (!certificate) throw new NotFoundException('Certificate not found');
         if (!application) throw new NotFoundException('Application not found');
 
-        const snapshotPayload =
-            buildApplicationSnapshotPayload(application);
+        // Collect unique subcategory IDs from sections
+        const subcategoryIds = new Set<number>();
+        application.answers?.forEach((answer) => {
+            if (answer.question?.section?.subcategoryId) {
+                subcategoryIds.add(answer.question.section.subcategoryId);
+            }
+        });
+
+        // Fetch subcategories
+        const subcategories =
+            subcategoryIds.size > 0
+                ? await this.subcategoryRepo.find({
+                      where: { id: In(Array.from(subcategoryIds)) },
+                  })
+                : [];
+
+        const snapshotPayload = buildApplicationSnapshotPayload(
+            application,
+            subcategories,
+        );
         await this.snapshotRepo.save({
             application,
             payload: snapshotPayload,
