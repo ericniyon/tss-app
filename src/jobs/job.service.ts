@@ -9,6 +9,11 @@ import { SendGridService } from '../notification/sendgrid.service';
 import { CertificateExpireReminderTemplate } from '../shared/templates/certificate-expire-reminder';
 import { compareDate } from '../shared/utils/reminderDate';
 
+const cronExpression =
+    process.env.CRON_EXPRESSION && process.env.CRON_EXPRESSION.trim().length > 0
+        ? process.env.CRON_EXPRESSION
+        : '0 0 * * *';
+
 @Injectable()
 export class JobService {
     constructor(
@@ -19,7 +24,7 @@ export class JobService {
 
         private readonly connection: Connection,
     ) {}
-    @Cron(process.env.CRON_EXPRESSION)
+    @Cron(cronExpression)
     async handleCertificateCron(): Promise<void> {
         const certificates = await this.certificateRepo.find({
             relations: ['application', 'application.applicant'],
