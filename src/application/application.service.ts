@@ -42,8 +42,10 @@ import { ReviewAnswersDto } from './dto/update-answer-status.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { Answer } from './entities/answer.entity';
 import { Application } from './entities/application.entity';
+import { ApplicationSnapshot } from './entities/application-snapshot.entity';
 import { EAnswerStatus, EApplicationStatus } from './enums';
 import { IApplication } from './interfaces/application.interface';
+import { ApplicationSnapshotPayload } from './utils/application-snapshot.util';
 
 @Injectable()
 export class ApplicationService {
@@ -62,6 +64,8 @@ export class ApplicationService {
         private readonly userRepo: Repository<User>,
         @InjectRepository(Certificate)
         private readonly certificateRepo: Repository<Certificate>,
+        @InjectRepository(ApplicationSnapshot)
+        private readonly snapshotRepo: Repository<ApplicationSnapshot>,
         private sendgridService: SendGridService,
         private configService: ConfigService,
         private certificateService: CertificateService,
@@ -306,6 +310,35 @@ export class ApplicationService {
             );
         });
         return application;
+    }
+
+    async findLatestSnapshot(
+        id: number,
+        user: User,
+    ): Promise<ApplicationSnapshotPayload> {
+        const application = await this.applicationRepo.findOne({
+            where: { id },
+            relations: ['applicant'],
+        });
+        if (!application) throw new NotFoundException('Application not found');
+
+        if (
+            user.role === Roles.COMPANY &&
+            application.applicant.id !== user.id
+        ) {
+            throw new BadRequestException(
+                "You cannot view someone else's application snapshot",
+            );
+        }
+
+        const snapshot = await this.snapshotRepo.findOne({
+            where: { application: { id } },
+            order: { createdAt: 'DESC' },
+        });
+        if (!snapshot)
+            throw new NotFoundException('Application snapshot not found');
+
+        return snapshot.payload as ApplicationSnapshotPayload;
     }
 
     async findQuestions(

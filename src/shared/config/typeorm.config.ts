@@ -2,6 +2,10 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import 'dotenv/config';
 import { isRunningInDevelopment } from '../utils/env.util';
 
+const migrations = isRunningInDevelopment()
+    ? ['src/db/migrations/*{.ts,.js}']
+    : ['dist/src/db/migrations/*{.ts,.js}', 'dist/db/migrations/*{.ts,.js}'];
+
 const typeOrmConfig: TypeOrmModuleOptions = {
     host: process.env.POSTGRES_HOST,
     port: parseInt(process.env.POSTGRES_PORT),
@@ -17,7 +21,7 @@ const typeOrmConfig: TypeOrmModuleOptions = {
     entities: ['dist/**/*.entity.js'],
     autoLoadEntities: true,
     migrationsTableName: 'migrations',
-    migrations: ['dist/db/migrations/*{.ts,.js}'],
+    migrations,
     cli: { migrationsDir: 'src/db/migrations' },
     migrationsRun: !isRunningInDevelopment(),
     // extra: {

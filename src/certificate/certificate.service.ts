@@ -4,7 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { Brackets, Repository } from 'typeorm';
 import { Application } from '../application/entities/application.entity';
+import { ApplicationSnapshot } from '../application/entities/application-snapshot.entity';
 import { EApplicationStatus } from '../application/enums';
+import { buildApplicationSnapshotPayload } from '../application/utils/application-snapshot.util';
 import { SendGridService } from '../notification/sendgrid.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { EPaymentType } from '../payment/enums/payment-type.enum';
@@ -26,6 +28,8 @@ export class CertificateService {
         private configService: ConfigService,
         @InjectRepository(Application)
         private readonly appRepo: Repository<Application>,
+        @InjectRepository(ApplicationSnapshot)
+        private readonly snapshotRepo: Repository<ApplicationSnapshot>,
         @InjectRepository(Payment)
         private readonly paymentRepo: Repository<Payment>,
         @InjectRepository(User)
@@ -137,12 +141,13 @@ export class CertificateService {
         certificate.isRenewing = false;
         certificate.expirationDate =
             certificate.isExpired() || !certificate.expirationDate
-                ? new Date('30 JUN  2025')
-                : new Date('30 JUN  2025');
-            // certificate.isExpired() || !certificate.expirationDate
-                // ? this.setExpiration(1)
-                // : this.setExpiration(1, certificate.expirationDate);
+                ? this.setExpiration(1)
+                : this.setExpiration(1, certificate.expirationDate);
+        certificate.grantedAt = new Date();
         const result = await this.certificateRepo.save(certificate);
+        result.application = await this.loadApplicationWithQuestions(
+            certificate.application.id,
+        );
         const admins = await this.userRepo.find({
             where: { activated: true, role: Roles.DBI_ADMIN },
         });
@@ -166,14 +171,37 @@ export class CertificateService {
 
     async isRenewingCertificate(uniqueId: string): Promise<Certificate> {
         const certificate = await this.findOne(uniqueId);
-        const application: Application = certificate.application;
+        const application = await this.appRepo.findOne(
+            certificate.application.id,
+            {
+                relations: [
+                    'answers',
+                    'answers.question',
+                    'answers.question.section',
+                    'category',
+                    'applicant',
+                    'assignees',
+                ],
+            },
+        );
         if (!certificate) throw new NotFoundException('Certificate not found');
+        if (!application) throw new NotFoundException('Application not found');
+
+        const snapshotPayload =
+            buildApplicationSnapshotPayload(application);
+        await this.snapshotRepo.save({
+            application,
+            payload: snapshotPayload,
+        });
+
         certificate.isRenewing = true;
-        application.answers = [];
         application.status = EApplicationStatus.PENDING;
         application.submittedAt = new Date();
         await this.appRepo.save(application);
         const result = await this.certificateRepo.save(certificate);
+        result.application = await this.loadApplicationWithQuestions(
+            application.id,
+        );
         return result;
     }
 
@@ -201,9 +229,7 @@ export class CertificateService {
 
             You can download your trust seal by logging into your account.
             `;
-                certificate.expirationDate = new Date("30 JUN 2025");
-                
-                // certificate.expirationDate = this.setExpiration(1);
+                certificate.expirationDate = this.setExpiration(1);
                 certificate.grantedAt = new Date();
                 await this.certificateRepo.save(certificate);
                 await this.paymentRepo.save({
@@ -309,6 +335,20 @@ export class CertificateService {
             ],
         });
         return certificate;
+    }
+    private async loadApplicationWithQuestions(
+        applicationId: number,
+    ): Promise<Application> {
+        return this.appRepo.findOne(applicationId, {
+            relations: [
+                'answers',
+                'answers.question',
+                'answers.question.section',
+                'applicant',
+                'category',
+                'assignees',
+            ],
+        });
     }
     setExpiration(yr: number, date: Date = new Date()): any {
         const dt = new Date(date);
