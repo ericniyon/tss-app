@@ -164,6 +164,22 @@ export class ApplicationController {
     }
 
     @Auth()
+    @Get(':id/snapshot')
+    @OkResponse(ApplicationResponseDto)
+    async findLatestSnapshot(
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: User,
+    ): Promise<GenericResponse<Application>> {
+        return {
+            message: 'Application snapshot retrieved successfully',
+            results: (await this.applicationService.findLatestSnapshot(
+                id,
+                user,
+            )) as unknown as Application,
+        };
+    }
+
+    @Auth()
     @Get(':id')
     @OkResponse(ApplicationResponseDto)
     async findOne(

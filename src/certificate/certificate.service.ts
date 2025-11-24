@@ -4,7 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { Brackets, Repository } from 'typeorm';
 import { Application } from '../application/entities/application.entity';
+import { ApplicationSnapshot } from '../application/entities/application-snapshot.entity';
 import { EApplicationStatus } from '../application/enums';
+import { buildApplicationSnapshotPayload } from '../application/utils/application-snapshot.util';
 import { SendGridService } from '../notification/sendgrid.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { EPaymentType } from '../payment/enums/payment-type.enum';
@@ -26,6 +28,8 @@ export class CertificateService {
         private configService: ConfigService,
         @InjectRepository(Application)
         private readonly appRepo: Repository<Application>,
+        @InjectRepository(ApplicationSnapshot)
+        private readonly snapshotRepo: Repository<ApplicationSnapshot>,
         @InjectRepository(Payment)
         private readonly paymentRepo: Repository<Payment>,
         @InjectRepository(User)
@@ -166,8 +170,30 @@ export class CertificateService {
 
     async isRenewingCertificate(uniqueId: string): Promise<Certificate> {
         const certificate = await this.findOne(uniqueId);
-        const application: Application = certificate.application;
+        const application = await this.appRepo.findOne(
+            certificate.application.id,
+            {
+                relations: [
+                    'answers',
+                    'answers.question',
+                    'answers.question.section',
+                    'category',
+                    'applicant',
+                    'assignees',
+                ],
+            },
+        );
         if (!certificate) throw new NotFoundException('Certificate not found');
+        if (!application) throw new NotFoundException('Application not found');
+
+        if (application.answers && application.answers.length > 0) {
+            const payload = buildApplicationSnapshotPayload(application);
+            await this.snapshotRepo.save({
+                application,
+                payload,
+            });
+        }
+
         certificate.isRenewing = true;
         application.answers = [];
         application.status = EApplicationStatus.PENDING;

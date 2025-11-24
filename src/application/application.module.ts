@@ -13,11 +13,13 @@ import { ApplicationController } from './application.controller';
 import { ApplicationService } from './application.service';
 import { Answer } from './entities/answer.entity';
 import { Application } from './entities/application.entity';
+import { ApplicationSnapshot } from './entities/application-snapshot.entity';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([
             Application,
+            ApplicationSnapshot,
             Answer,
             Question,
             Category,
