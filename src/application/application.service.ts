@@ -444,14 +444,52 @@ export class ApplicationService {
             );
         }
 
-        const questions = await this.findQuestions(application.category.id);
+        // Fetch only answers for this specific application
+        const answers = await this.answerRepo.find({
+            where: { application: { id } },
+            relations: ['question', 'question.section'],
+        });
+
+        if (answers.length === 0) {
+            return {
+                ...application,
+                answers: [],
+                sections: [],
+            };
+        }
+
+        // Build map of question ID to answer for quick lookup
+        const answersMap = new Map<number, Answer>();
+        const questionIds = new Set<number>();
+        const sectionIds = new Set<number>();
+
+        for (const answer of answers) {
+            if (answer.question?.id) {
+                answersMap.set(answer.question.id, answer);
+                questionIds.add(answer.question.id);
+                if (answer.question.section?.id) {
+                    sectionIds.add(answer.question.section.id);
+                }
+            }
+        }
+
+        // Fetch only questions that have answers for this application
+        const questions = await this.questionRepo.find({
+            where: { id: Array.from(questionIds) },
+            relations: ['section'],
+        });
+
+        // Build sections map - only include sections that have questions with answers
         const sectionsMap = new Map<
             number,
             IEditableApplication['sections'][number]
         >();
 
         for (const question of questions) {
-            if (!question.section) continue;
+            // Only process questions that have answers
+            const existingAnswer = answersMap.get(question.id);
+            if (!existingAnswer || !question.section) continue;
+
             if (!sectionsMap.has(question.section.id)) {
                 sectionsMap.set(question.section.id, {
                     id: question.section.id,
@@ -460,35 +498,28 @@ export class ApplicationService {
                     questions: [],
                 });
             }
+
             const currentSection = sectionsMap.get(question.section.id);
             if (!currentSection) continue;
-            const existingAnswer = application.answers?.find(
-                (answer) => answer.question?.id === question.id,
-            );
+
+            // Only add question if it has an answer
             currentSection.questions.push({
                 id: question.id,
                 text: question.text,
                 type: question.type,
                 requiresAttachments: question.requiresAttachments,
                 possibleAnswers: question.possibleAnswers || [],
-                answer: existingAnswer
-                    ? {
-                          id: existingAnswer.id,
-                          responses: existingAnswer.responses || [],
-                          attachments: existingAnswer.attachments || [],
-                          status: existingAnswer.status,
-                          feedback: existingAnswer.feedback,
-                      }
-                    : {
-                          id: null,
-                          responses: [],
-                          attachments: [],
-                          status: null,
-                          feedback: null,
-                      },
+                answer: {
+                    id: existingAnswer.id,
+                    responses: existingAnswer.responses || [],
+                    attachments: existingAnswer.attachments || [],
+                    status: existingAnswer.status,
+                    feedback: existingAnswer.feedback,
+                },
             });
         }
 
+        // Sort sections and questions
         const sections = Array.from(sectionsMap.values())
             .map((section) => ({
                 ...section,
@@ -496,8 +527,10 @@ export class ApplicationService {
             }))
             .sort((a, b) => a.id - b.id);
 
+        // Return application with only answers for this application
         return {
             ...application,
+            answers: answers, // Only answers for this application
             sections,
         };
     }
