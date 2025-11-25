@@ -479,7 +479,13 @@ export class ApplicationService {
                           status: existingAnswer.status,
                           feedback: existingAnswer.feedback,
                       }
-                    : undefined,
+                    : {
+                          id: null,
+                          responses: [],
+                          attachments: [],
+                          status: null,
+                          feedback: null,
+                      },
             });
         }
 

@@ -24,11 +24,11 @@ export interface IEditableApplication extends Application {
             requiresAttachments: boolean;
             possibleAnswers?: string[];
             answer?: {
-                id: number;
+                id: number | null;
                 responses: string[];
                 attachments: string[];
-                status?: EAnswerStatus;
-                feedback?: string;
+                status?: EAnswerStatus | null;
+                feedback?: string | null;
             };
         }[];
     }[];

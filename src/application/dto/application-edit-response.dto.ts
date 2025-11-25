@@ -6,8 +6,8 @@ import { EApplicationStatus, EAnswerStatus } from '../enums';
 import { User } from '../../users/entities/user.entity';
 
 class ApplicationEditAnswerDto {
-    @ApiProperty()
-    id: number;
+    @ApiProperty({ nullable: true })
+    id: number | null;
 
     @ApiProperty({ type: [String] })
     responses: string[];
@@ -15,11 +15,11 @@ class ApplicationEditAnswerDto {
     @ApiProperty({ type: [String] })
     attachments: string[];
 
-    @ApiProperty({ enum: EAnswerStatus, required: false })
-    status?: EAnswerStatus;
+    @ApiProperty({ enum: EAnswerStatus, required: false, nullable: true })
+    status?: EAnswerStatus | null;
 
-    @ApiProperty({ required: false })
-    feedback?: string;
+    @ApiProperty({ required: false, nullable: true })
+    feedback?: string | null;
 }
 
 class ApplicationEditQuestionDto {
