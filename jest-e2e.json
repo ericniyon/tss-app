@@ -9,5 +9,8 @@
     },
     "coverageDirectory": "./coverage",
     "coverageReporters": ["html", "text", "text-summary", "cobertura"],
-    "coveragePathIgnorePatterns": [".entity.ts$", ".spec.ts$", ".dto.ts$"]
+    "coveragePathIgnorePatterns": [".entity.ts$", ".spec.ts$", ".dto.ts$"],
+    "moduleNameMapper": {
+        "^src/(.*)$": "<rootDir>/src/$1"
+    }
 }

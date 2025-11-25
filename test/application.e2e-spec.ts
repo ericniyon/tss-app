@@ -134,6 +134,17 @@ describe('ApplicationController (e2e)', () => {
         expect(res.status).toEqual(HttpStatus.OK);
         done();
     });
+    it('company should fetch editable application data', async (done) => {
+        const res = await request(app.getHttpServer())
+            .get(`/applications/${applicationId}/edit-data`)
+            .set('cookie', cookieString(companyAuthCookie));
+        expect(res.status).toEqual(HttpStatus.OK);
+        expect(res.body?.payload?.sections?.length).toBeGreaterThan(0);
+        const firstSection = res.body.payload.sections[0];
+        expect(firstSection.questions.length).toBeGreaterThan(0);
+        expect(firstSection.questions[0]).toHaveProperty('answer');
+        done();
+    });
     it('should submit an application', async (done) => {
         const res = await request(app.getHttpServer())
             .patch(`/applications/${applicationId}/submit`)

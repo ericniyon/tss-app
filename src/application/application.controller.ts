@@ -32,6 +32,7 @@ import { ApplicationService } from './application.service';
 import { AddAssigneesDto } from './dto/add-assignees.dto';
 import { ApplicationFilterOptionsDto } from './dto/application-filter-options.dto';
 import { ApplicationResponseDto } from './dto/application-response.dto';
+import { ApplicationEditResponseDto } from './dto/application-edit-response.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import {
     ReviewAnswersDto,
@@ -190,6 +191,22 @@ export class ApplicationController {
             results: await this.applicationService.findOne({
                 where: { id: +id },
             }),
+        };
+    }
+
+    @Auth()
+    @Get(':id/edit-data')
+    @OkResponse(ApplicationEditResponseDto)
+    async findEditableData(
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: User,
+    ): Promise<GenericResponse<ApplicationEditResponseDto>> {
+        return {
+            message: 'Application retrieved successfully',
+            results: (await this.applicationService.findEditableApplication(
+                id,
+                user,
+            )) as ApplicationEditResponseDto,
         };
     }
 

@@ -44,7 +44,10 @@ import { Answer } from './entities/answer.entity';
 import { Application } from './entities/application.entity';
 import { ApplicationSnapshot } from './entities/application-snapshot.entity';
 import { EAnswerStatus, EApplicationStatus } from './enums';
-import { IApplication } from './interfaces/application.interface';
+import {
+    IApplication,
+    IEditableApplication,
+} from './interfaces/application.interface';
 import { ApplicationSnapshotPayload } from './utils/application-snapshot.util';
 
 @Injectable()
@@ -411,6 +414,85 @@ export class ApplicationService {
                 ' ',
             ) as EApplicationStatus,
             sections: sections.sort((a, b) => a.id - b.id),
+        };
+    }
+
+    async findEditableApplication(
+        id: number,
+        user: User,
+    ): Promise<IEditableApplication> {
+        const application = await this.applicationRepo.findOne({
+            where: { id },
+            relations: [
+                'category',
+                'applicant',
+                'assignees',
+                'certificate',
+                'answers',
+                'answers.question',
+                'answers.question.section',
+            ],
+        });
+        if (!application) throw new NotFoundException('Application not found');
+
+        if (
+            user.role === Roles.COMPANY &&
+            application.applicant.id !== user.id
+        ) {
+            throw new BadRequestException(
+                "You cannot view someone else's application",
+            );
+        }
+
+        const questions = await this.findQuestions(application.category.id);
+        const sectionsMap = new Map<
+            number,
+            IEditableApplication['sections'][number]
+        >();
+
+        for (const question of questions) {
+            if (!question.section) continue;
+            if (!sectionsMap.has(question.section.id)) {
+                sectionsMap.set(question.section.id, {
+                    id: question.section.id,
+                    title: question.section.title,
+                    tips: question.section.tips,
+                    questions: [],
+                });
+            }
+            const currentSection = sectionsMap.get(question.section.id);
+            if (!currentSection) continue;
+            const existingAnswer = application.answers?.find(
+                (answer) => answer.question?.id === question.id,
+            );
+            currentSection.questions.push({
+                id: question.id,
+                text: question.text,
+                type: question.type,
+                requiresAttachments: question.requiresAttachments,
+                possibleAnswers: question.possibleAnswers || [],
+                answer: existingAnswer
+                    ? {
+                          id: existingAnswer.id,
+                          responses: existingAnswer.responses || [],
+                          attachments: existingAnswer.attachments || [],
+                          status: existingAnswer.status,
+                          feedback: existingAnswer.feedback,
+                      }
+                    : undefined,
+            });
+        }
+
+        const sections = Array.from(sectionsMap.values())
+            .map((section) => ({
+                ...section,
+                questions: section.questions.sort((a, b) => a.id - b.id),
+            }))
+            .sort((a, b) => a.id - b.id);
+
+        return {
+            ...application,
+            sections,
         };
     }
 
