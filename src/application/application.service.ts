@@ -578,7 +578,11 @@ export class ApplicationService {
                 throw new BadRequestException(
                     "You cannot edit someone else's application",
                 );
+            // Allow updates during certificate renewal
+            const isRenewing =
+                application.certificate && application.certificate.isRenewing;
             if (
+                !isRenewing &&
                 application.status !== EApplicationStatus.DENIED &&
                 application.submittedAt
             )
