@@ -43,6 +43,7 @@ import { UpdateApplicationDto } from './dto/update-application.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 import { Application } from './entities/application.entity';
 import { CreateOrUpdateAnswersDto } from './dto/create-answer.dto';
+import { DeleteCloudinaryImageDto } from './dto/delete-cloudinary-image.dto';
 import { Roles } from '../shared/enums/roles.enum';
 import { Role } from '../auth/decorators/roles.decorator';
 import { createReadableStream } from '../shared/utils/file.util';
@@ -173,10 +174,13 @@ export class ApplicationController {
     @Auth()
     @OkResponse()
     async deleteCloudinaryImage(
-        @Body('publicId') publicId: string,
+        @Body() deleteImageDto: DeleteCloudinaryImageDto,
         @GetUser() user: User,
     ): Promise<GenericResponse<void>> {
-        await this.applicationService.deleteCloudinaryImage(publicId, user);
+        await this.applicationService.deleteCloudinaryImage(
+            deleteImageDto.publicId,
+            user,
+        );
         return { message: 'Image deleted successfully' };
     }
 
