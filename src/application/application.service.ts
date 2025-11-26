@@ -5,6 +5,9 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as ExcelJS from 'exceljs';
 import { MailDataRequired } from '@sendgrid/mail';
@@ -72,6 +75,7 @@ export class ApplicationService {
         private sendgridService: SendGridService,
         private configService: ConfigService,
         private certificateService: CertificateService,
+        private httpService: HttpService,
 
         private readonly connection: Connection,
     ) {}
@@ -994,5 +998,77 @@ export class ApplicationService {
             fileName: 'Answers.xlsx',
             buffer,
         };
+    }
+
+    async deleteCloudinaryImage(publicId: string): Promise<void> {
+        if (!publicId) {
+            throw new BadRequestException('Public ID is required');
+        }
+
+        const cloudinaryCloudName =
+            this.configService.get<string>('CLOUDINARY_CLOUD_NAME');
+        const cloudinaryApiKey =
+            this.configService.get<string>('CLOUDINARY_API_KEY');
+        const cloudinaryApiSecret =
+            this.configService.get<string>('CLOUDINARY_API_SECRET');
+
+        if (!cloudinaryCloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
+            Logger.warn(
+                'Cloudinary credentials not configured. Skipping image deletion.',
+            );
+            return;
+        }
+
+        try {
+            // Extract public_id from full URL if provided
+            let extractedPublicId = publicId;
+            if (publicId.includes('cloudinary.com')) {
+                // Extract public_id from Cloudinary URL
+                // Format: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
+                const urlParts = publicId.split('/upload/');
+                if (urlParts.length > 1) {
+                    const pathAfterUpload = urlParts[1];
+                    // Remove version if present (v1234567890/)
+                    const withoutVersion = pathAfterUpload.replace(
+                        /^v\d+\//,
+                        '',
+                    );
+                    // Remove file extension
+                    extractedPublicId = withoutVersion.replace(/\.[^/.]+$/, '');
+                }
+            }
+
+            // Use Cloudinary Admin API to delete
+            const timestamp = Math.round(new Date().getTime() / 1000);
+            const signature = crypto
+                .createHash('sha1')
+                .update(
+                    `public_id=${extractedPublicId}&timestamp=${timestamp}${cloudinaryApiSecret}`,
+                )
+                .digest('hex');
+
+            const deleteUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/destroy`;
+
+            await firstValueFrom(
+                this.httpService.post(deleteUrl, null, {
+                    params: {
+                        public_id: extractedPublicId,
+                        api_key: cloudinaryApiKey,
+                        timestamp: timestamp,
+                        signature: signature,
+                    },
+                }),
+            );
+
+            Logger.log(`Successfully deleted Cloudinary image: ${extractedPublicId}`);
+        } catch (error) {
+            Logger.error(
+                `Failed to delete Cloudinary image: ${publicId}`,
+                error.stack,
+            );
+            throw new BadRequestException(
+                `Failed to delete image: ${error.message || 'Unknown error'}`,
+            );
+        }
     }
 }

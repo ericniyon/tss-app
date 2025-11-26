@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CertificateModule } from '../certificate/certificate.module';
 import { Category } from '../category/entities/category.entity';
@@ -27,6 +28,7 @@ import { ApplicationSnapshot } from './entities/application-snapshot.entity';
             User,
             Certificate,
         ]),
+        HttpModule,
         CertificateModule,
     ],
     controllers: [ApplicationController],

@@ -169,6 +169,16 @@ export class ApplicationController {
         };
     }
 
+    @Post('cloudinary/delete')
+    @Auth()
+    @OkResponse()
+    async deleteCloudinaryImage(
+        @Body('publicId') publicId: string,
+    ): Promise<GenericResponse<void>> {
+        await this.applicationService.deleteCloudinaryImage(publicId);
+        return { message: 'Image deleted successfully' };
+    }
+
     @Auth()
     @Post('join-interview')
     @OkResponse()
