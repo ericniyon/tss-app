@@ -96,6 +96,20 @@ export class ApplicationController {
     }
 
     @Auth()
+    @Get('renew-certificate')
+    @OkResponse(Application)
+    async findLatestRenewCertificate(
+        @GetUser() user: User,
+    ): Promise<GenericResponse<Application>> {
+        return {
+            message: 'Application retrieved successfully',
+            results: await this.applicationService.findLatestRenewCertificate(
+                user,
+            ),
+        };
+    }
+
+    @Auth()
     @Get('current')
     @OkResponse(Application)
     async findCurrentApplicationOrCertificate(@GetUser() user: User): Promise<

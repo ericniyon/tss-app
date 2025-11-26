@@ -270,6 +270,26 @@ export class ApplicationService {
             order: { createdAt: 'DESC' },
         });
     }
+
+    async findLatestRenewCertificate(user: User): Promise<Application> {
+        const application = await this.applicationRepo
+            .createQueryBuilder('application')
+            .leftJoin('application.applicant', 'applicant')
+            .leftJoin('application.certificate', 'certificate')
+            .where('applicant.id = :userId', { userId: user.id })
+            .andWhere('certificate.isRenewing = :isRenewing', {
+                isRenewing: true,
+            })
+            .orderBy('application.createdAt', 'DESC')
+            .getOne();
+
+        if (!application)
+            throw new NotFoundException('Application not found for renewal');
+
+        return await this.findOne({
+            where: { id: application.id },
+        });
+    }
     async findCurrentApplicationOrCertificate(
         user: User,
     ): Promise<{ ongoingApplication: number; currentCertificate: number }> {
@@ -368,6 +388,7 @@ export class ApplicationService {
     }
 
     async findOne(options: FindOneOptions<Application>): Promise<IApplication> {
+        // First, get the application with basic relations
         const application = await this.applicationRepo.findOne({
             ...options,
             relations: [
@@ -375,12 +396,21 @@ export class ApplicationService {
                 'applicant',
                 'assignees',
                 'certificate',
-                'answers',
-                'answers.question',
-                'answers.question.section',
             ],
         });
         if (!application) throw new NotFoundException('Application not found');
+
+        // Fetch all answers separately to ensure we get all of them
+        // This is more reliable than nested relations in findOne
+        const answers = await this.answerRepo.find({
+            where: { application: { id: application.id } },
+            relations: ['question', 'question.section'],
+            order: { id: 'ASC' },
+        });
+
+        // Attach answers to application
+        application.answers = answers;
+
         let sections: {
             id: number;
             title: string;
@@ -388,19 +418,21 @@ export class ApplicationService {
             answers: Answer[];
         }[] = [];
         for (const answer of application.answers) {
-            if (answer.question.section) {
-                const title = answer.question.section?.title;
+            if (answer.question?.section) {
+                const sectionId = answer.question.section.id;
                 const sectionIndex = sections.findIndex(
-                    (s) => s.title === title,
+                    (s) => s.id === sectionId,
                 );
                 if (sectionIndex < 0) {
                     sections.push({
-                        title,
-                        tips: answer.question.section?.tips,
+                        id: sectionId,
+                        title: answer.question.section.title,
+                        tips: answer.question.section.tips,
                         answers: [answer],
-                        id: answer.question.section.id,
                     });
-                } else sections[sectionIndex].answers.push(answer);
+                } else {
+                    sections[sectionIndex].answers.push(answer);
+                }
             }
         }
         sections = sections.map((el) => ({
