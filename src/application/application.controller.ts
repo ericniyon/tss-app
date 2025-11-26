@@ -174,8 +174,9 @@ export class ApplicationController {
     @OkResponse()
     async deleteCloudinaryImage(
         @Body('publicId') publicId: string,
+        @GetUser() user: User,
     ): Promise<GenericResponse<void>> {
-        await this.applicationService.deleteCloudinaryImage(publicId);
+        await this.applicationService.deleteCloudinaryImage(publicId, user);
         return { message: 'Image deleted successfully' };
     }
 

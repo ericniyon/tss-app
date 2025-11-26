@@ -1000,9 +1000,62 @@ export class ApplicationService {
         };
     }
 
-    async deleteCloudinaryImage(publicId: string): Promise<void> {
+    async deleteCloudinaryImage(publicId: string, user: User): Promise<void> {
         if (!publicId) {
             throw new BadRequestException('Public ID is required');
+        }
+
+        // Find the answer that contains this attachment
+        // Use a query to find answers where attachments array contains the publicId
+        const answers = await this.answerRepo
+            .createQueryBuilder('answer')
+            .leftJoinAndSelect('answer.application', 'application')
+            .leftJoinAndSelect('application.applicant', 'applicant')
+            .where('answer.attachments::text LIKE :search', {
+                search: `%${publicId}%`,
+            })
+            .getMany();
+
+        // Find answer containing this attachment (exact match)
+        let foundAnswer: Answer | null = null;
+        let attachmentUrl: string | null = null;
+
+        for (const answer of answers) {
+            if (answer.attachments && answer.attachments.length > 0) {
+                for (const attachment of answer.attachments) {
+                    // Check if the attachment URL or public_id matches
+                    if (
+                        attachment === publicId ||
+                        attachment.includes(publicId) ||
+                        publicId.includes(attachment)
+                    ) {
+                        foundAnswer = answer;
+                        attachmentUrl = attachment;
+                        break;
+                    }
+                }
+                if (foundAnswer) break;
+            }
+        }
+
+        // Verify ownership (for COMPANY role users)
+        if (user.role === Roles.COMPANY) {
+            if (!foundAnswer) {
+                throw new NotFoundException(
+                    'Image not found in any of your applications',
+                );
+            }
+            if (foundAnswer.application.applicant.id !== user.id) {
+                throw new BadRequestException(
+                    "You cannot delete images from someone else's application",
+                );
+            }
+        } else if (!foundAnswer) {
+            // For admins/experts, allow deletion even if not found in database
+            // (might be orphaned or from deleted application)
+            Logger.warn(
+                `Image ${publicId} not found in database, proceeding with deletion anyway (admin/expert user)`,
+            );
         }
 
         const cloudinaryCloudName =
@@ -1036,6 +1089,14 @@ export class ApplicationService {
                     // Remove file extension
                     extractedPublicId = withoutVersion.replace(/\.[^/.]+$/, '');
                 }
+            } else if (attachmentUrl && attachmentUrl.includes('cloudinary.com')) {
+                // Use the full URL from the database to extract public_id
+                const urlParts = attachmentUrl.split('/upload/');
+                if (urlParts.length > 1) {
+                    const pathAfterUpload = urlParts[1];
+                    const withoutVersion = pathAfterUpload.replace(/^v\d+\//, '');
+                    extractedPublicId = withoutVersion.replace(/\.[^/.]+$/, '');
+                }
             }
 
             // Use Cloudinary Admin API to delete
@@ -1059,6 +1120,17 @@ export class ApplicationService {
                     },
                 }),
             );
+
+            // Remove attachment from answer if found
+            if (foundAnswer && attachmentUrl) {
+                foundAnswer.attachments = foundAnswer.attachments.filter(
+                    (att) => att !== attachmentUrl,
+                );
+                await this.answerRepo.save(foundAnswer);
+                Logger.log(
+                    `Removed attachment from answer ${foundAnswer.id}: ${attachmentUrl}`,
+                );
+            }
 
             Logger.log(`Successfully deleted Cloudinary image: ${extractedPublicId}`);
         } catch (error) {
