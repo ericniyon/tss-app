@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -41,6 +42,7 @@ import {
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 import { Application } from './entities/application.entity';
+import { CreateOrUpdateAnswersDto } from './dto/create-answer.dto';
 import { Roles } from '../shared/enums/roles.enum';
 import { Role } from '../auth/decorators/roles.decorator';
 import { createReadableStream } from '../shared/utils/file.util';
@@ -266,6 +268,35 @@ export class ApplicationController {
     ): Promise<GenericResponse<void>> {
         await this.applicationService.reviewAnswers(+id, dto);
         return { message: 'Answers updated successfully' };
+    }
+
+    @Patch(':id/answers')
+    @OkResponse(Application)
+    @Auth()
+    async updateAnswers(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() createOrUpdateAnswersDto: CreateOrUpdateAnswersDto,
+        @GetUser() user: User,
+    ): Promise<GenericResponse<Application>> {
+        // Verify user owns the application (for COMPANY role)
+        const application = await this.applicationService.findOne({
+            where: { id },
+        });
+        if (user.role === Roles.COMPANY) {
+            if (application.applicant.id !== user.id) {
+                throw new BadRequestException(
+                    "You cannot update someone else's application answers",
+                );
+            }
+        }
+        const results = await this.applicationService.createOrUpdateAnswers(
+            id,
+            createOrUpdateAnswersDto,
+        );
+        return {
+            message: 'Answers updated successfully',
+            results,
+        };
     }
 
     @Put(':id')
