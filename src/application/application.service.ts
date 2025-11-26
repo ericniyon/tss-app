@@ -161,6 +161,17 @@ export class ApplicationService {
             }
             await this.questionRepo.save(question);
         }
+        
+        // Auto-submit when answers are updated during certificate renewal
+        const isRenewing =
+            application.certificate && application.certificate.isRenewing;
+        // Only auto-submit during certificate renewal
+        if (isRenewing && application.status !== EApplicationStatus.APPROVED) {
+            application.status = EApplicationStatus.SUBMITTED;
+            application.submittedAt = new Date();
+            await this.applicationRepo.save(application);
+        }
+        
         return await this.findOne({ where: { id: application.id } });
     }
     async findAll(
@@ -582,16 +593,16 @@ export class ApplicationService {
                 throw new BadRequestException(
                     "You cannot edit someone else's application",
                 );
-            // Allow updates during certificate renewal
+            // Allow updates during certificate renewal or if status is DENIED (for resubmission)
+            // Block updates only if status is APPROVED (final state)
             const isRenewing =
                 application.certificate && application.certificate.isRenewing;
             if (
                 !isRenewing &&
-                application.status !== EApplicationStatus.DENIED &&
-                application.submittedAt
+                application.status === EApplicationStatus.APPROVED
             )
                 throw new BadRequestException(
-                    'Application has already been submitted',
+                    'Cannot update an approved application',
                 );
             if (updateApplicationDto.companyUrl)
                 application.companyUrl = updateApplicationDto.companyUrl;
@@ -608,6 +619,18 @@ export class ApplicationService {
                 application.category = category;
             }
         }
+        
+        // Auto-submit when application is updated by COMPANY user during renewal
+        if (user.role === Roles.COMPANY) {
+            const isRenewing =
+                application.certificate && application.certificate.isRenewing;
+            // Only auto-submit during certificate renewal
+            if (isRenewing && application.status !== EApplicationStatus.APPROVED) {
+                application.status = EApplicationStatus.SUBMITTED;
+                application.submittedAt = new Date();
+            }
+        }
+        
         await this.applicationRepo.save(application);
         if (updateApplicationDto.answers) {
             await this.createOrUpdateAnswers(id, updateApplicationDto.answers);
