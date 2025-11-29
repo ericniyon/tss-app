@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     ArrayNotEmpty,
     IsArray,
@@ -43,11 +44,13 @@ export class CreateOrUpdateAnswersDto {
 
 export class CreateStandaloneAnswerDto {
     @ApiProperty()
+    @Type(() => Number)
     @IsNumber()
     @IsPositive()
     applicationId: number;
 
     @ApiProperty()
+    @Type(() => Number)
     @IsNumber()
     @IsPositive()
     questionId: number;

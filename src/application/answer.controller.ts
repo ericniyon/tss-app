@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import {
     CreatedResponse,
@@ -12,6 +12,7 @@ import { Answer } from './entities/answer.entity';
 
 @Controller('answers')
 @ApiTags('Answers')
+@ApiExtraModels(Answer)
 export class AnswerController {
     constructor(private readonly applicationService: ApplicationService) {}
 
