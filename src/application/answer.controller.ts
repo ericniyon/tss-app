@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import {
@@ -14,6 +14,8 @@ import { Answer } from './entities/answer.entity';
 @ApiTags('Answers')
 @ApiExtraModels(Answer)
 export class AnswerController {
+    private readonly logger = new Logger(AnswerController.name);
+
     constructor(private readonly applicationService: ApplicationService) {}
 
     @Auth()
@@ -22,6 +24,7 @@ export class AnswerController {
     async create(
         @Body() createAnswerDto: CreateStandaloneAnswerDto,
     ): Promise<GenericResponse<Answer>> {
+        this.logger.debug('Received answer creation request:', JSON.stringify(createAnswerDto));
         const results = await this.applicationService.createAnswer(
             createAnswerDto,
         );

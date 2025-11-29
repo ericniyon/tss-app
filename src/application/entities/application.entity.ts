@@ -33,7 +33,7 @@ export class Application extends BaseEntity {
     status: EApplicationStatus;
 
     @OneToMany(() => Answer, (answer) => answer.application)
-    @ApiProperty()
+    @ApiProperty({ type: () => Answer, isArray: true })
     answers: Answer[];
 
     @ManyToOne(() => User)

@@ -30,10 +30,10 @@ export class Answer extends BaseEntity {
     feedback: string;
 
     @ManyToOne(() => Application, (application) => application.answers)
-    @ApiProperty()
+    @ApiProperty({ type: () => Application })
     application: Application;
 
     @ManyToOne(() => Question)
-    @ApiProperty()
+    @ApiProperty({ type: () => Question })
     question: Question;
 }
