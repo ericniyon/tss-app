@@ -2,11 +2,14 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     ArrayNotEmpty,
     IsArray,
+    IsEnum,
     IsNumber,
     IsOptional,
     IsPositive,
+    IsString,
     ValidateNested,
 } from 'class-validator';
+import { EAnswerStatus } from '../enums';
 
 export class CreateAnswerDto {
     @ApiProperty()
@@ -36,4 +39,35 @@ export class CreateOrUpdateAnswersDto {
     @IsArray()
     @ArrayNotEmpty()
     answers: CreateAnswerDto[];
+}
+
+export class CreateStandaloneAnswerDto {
+    @ApiProperty()
+    @IsNumber()
+    @IsPositive()
+    applicationId: number;
+
+    @ApiProperty()
+    @IsNumber()
+    @IsPositive()
+    questionId: number;
+
+    @ApiProperty()
+    @IsString()
+    questionText: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsArray()
+    attachments?: string[];
+
+    @ApiProperty()
+    @IsArray()
+    @ArrayNotEmpty()
+    responses: string[];
+
+    @ApiPropertyOptional({ enum: EAnswerStatus, nullable: true })
+    @IsOptional()
+    @IsEnum(EAnswerStatus)
+    status?: EAnswerStatus | null;
 }

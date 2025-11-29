@@ -11,6 +11,7 @@ import { Question } from '../question/entities/question.entity';
 import { Section } from '../section/entities/section.entity';
 import { User } from '../users/entities/user.entity';
 import { ApplicationController } from './application.controller';
+import { AnswerController } from './answer.controller';
 import { ApplicationService } from './application.service';
 import { Answer } from './entities/answer.entity';
 import { Application } from './entities/application.entity';
@@ -31,7 +32,7 @@ import { ApplicationSnapshot } from './entities/application-snapshot.entity';
         HttpModule,
         CertificateModule,
     ],
-    controllers: [ApplicationController],
+    controllers: [ApplicationController, AnswerController],
     providers: [ApplicationService, SendGridService, ConfigService],
     exports: [ApplicationService],
 })

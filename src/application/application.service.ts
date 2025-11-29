@@ -39,7 +39,10 @@ import { getActualDateRange } from '../shared/utils/date.util';
 import { User } from '../users/entities/user.entity';
 import { AddAssigneesDto } from './dto/add-assignees.dto';
 import { ApplicationFilterOptionsDto } from './dto/application-filter-options.dto';
-import { CreateOrUpdateAnswersDto } from './dto/create-answer.dto';
+import {
+    CreateOrUpdateAnswersDto,
+    CreateStandaloneAnswerDto,
+} from './dto/create-answer.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ReviewAnswersDto } from './dto/update-answer-status.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
@@ -174,6 +177,63 @@ export class ApplicationService {
         
         return await this.findOne({ where: { id: application.id } });
     }
+
+    async createAnswer(
+        dto: CreateStandaloneAnswerDto,
+    ): Promise<Answer> {
+        // Validate application exists
+        const application = await this.findOne({
+            where: { id: dto.applicationId },
+        });
+        if (!application) {
+            throw new NotFoundException(
+                `Application with id[${dto.applicationId}] not found.`,
+            );
+        }
+
+        // Validate question exists
+        const question = await this.questionRepo.findOne({
+            where: { id: dto.questionId },
+        });
+        if (!question) {
+            throw new NotFoundException(
+                `Question with id[${dto.questionId}] not found.`,
+            );
+        }
+
+        // Check if answer already exists for this application and question
+        const existingAnswer = await this.answerRepo.findOne({
+            where: {
+                application: { id: dto.applicationId },
+                question: { id: dto.questionId },
+            },
+        });
+
+        if (existingAnswer) {
+            throw new BadRequestException(
+                'An answer already exists for this application and question combination.',
+            );
+        }
+
+        // Create new answer
+        const answer = new Answer();
+        const newAnswer = await this.answerRepo.save({
+            ...answer,
+            application,
+            question,
+            questionText: dto.questionText,
+            attachments: dto.attachments || [],
+            responses: dto.responses,
+            status: dto.status || null,
+        });
+
+        // Update question's hasBeenAsked flag
+        question.hasBeenAsked = true;
+        await this.questionRepo.save(question);
+
+        return newAnswer;
+    }
+
     async findAll(
         user: User,
         options: IPagination,
