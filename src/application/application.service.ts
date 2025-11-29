@@ -42,6 +42,7 @@ import { ApplicationFilterOptionsDto } from './dto/application-filter-options.dt
 import {
     CreateOrUpdateAnswersDto,
     CreateStandaloneAnswerDto,
+    CreateBulkStandaloneAnswersDto,
 } from './dto/create-answer.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ReviewAnswersDto } from './dto/update-answer-status.dto';
@@ -232,6 +233,41 @@ export class ApplicationService {
         await this.questionRepo.save(question);
 
         return newAnswer;
+    }
+
+    async createBulkAnswers(
+        dto: CreateBulkStandaloneAnswersDto,
+    ): Promise<Answer[]> {
+        const createdAnswers: Answer[] = [];
+
+        for (const answerDto of dto.answers) {
+            try {
+                const answer = await this.createAnswer(answerDto);
+                createdAnswers.push(answer);
+            } catch (error) {
+                // Log error but continue with other answers
+                Logger.error(
+                    `Failed to create answer for applicationId: ${answerDto.applicationId}, questionId: ${answerDto.questionId}`,
+                    error.stack,
+                    'ApplicationService',
+                );
+                // Re-throw if it's a critical error (not just duplicate)
+                if (
+                    !error.message?.includes('already exists') &&
+                    !(error instanceof BadRequestException)
+                ) {
+                    throw error;
+                }
+            }
+        }
+
+        if (createdAnswers.length === 0) {
+            throw new BadRequestException(
+                'No answers were created. All answers may already exist or have validation errors.',
+            );
+        }
+
+        return createdAnswers;
     }
 
     async findAll(
