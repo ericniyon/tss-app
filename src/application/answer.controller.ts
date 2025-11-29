@@ -4,7 +4,6 @@ import {
     Logger,
     Post,
     Req,
-    RawBodyRequest,
 } from '@nestjs/common';
 import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -35,7 +34,7 @@ export class AnswerController {
     @Post()
     @CreatedResponse(Answer)
     async create(
-        @Req() req: RawBodyRequest<Request>,
+        @Req() req: Request,
         @Body() createAnswerDto: CreateStandaloneAnswerDto,
     ): Promise<GenericResponse<Answer>> {
         this.logger.debug('Raw request body:', JSON.stringify(req.body));
