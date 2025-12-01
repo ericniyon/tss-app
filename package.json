@@ -27,7 +27,12 @@
     "typeorm:create": "yarn typeorm migration:create -n",
     "typeorm:sync": "yarn build && yarn typeorm migration:generate -n",
     "typeorm:run": "yarn build && yarn typeorm migration:run",
-    "test:email": "ts-node -r tsconfig-paths/register scripts/test-email.ts"
+    "test:email": "ts-node -r tsconfig-paths/register scripts/test-email.ts",
+    "import:memberships": "ts-node -r tsconfig-paths/register scripts/import-memberships.ts",
+    "verify:memberships": "ts-node -r tsconfig-paths/register scripts/verify-memberships.ts",
+    "create:accounts": "ts-node -r tsconfig-paths/register scripts/create-user-accounts.ts",
+    "verify:accounts": "ts-node -r tsconfig-paths/register scripts/verify-user-accounts.ts",
+    "test:db": "ts-node -r tsconfig-paths/register scripts/test-db-connection.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^0.0.7",
