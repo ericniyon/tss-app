@@ -9,21 +9,39 @@ export class CommonFilterOptionsDto {
             .toISOString()
             .split('T')[0],
     })
-    @Transform(({ value }: { value: string | undefined }) => {
+    @Transform(({ value }: { value: any }) => {
         if (value === undefined || value === null || value === '') {
             return undefined;
         }
-        return parseDate(value);
+        // If it's already a Date, return it
+        if (value instanceof Date) {
+            return value;
+        }
+        // Convert to string and check if empty
+        const strValue = String(value).trim();
+        if (strValue === '') {
+            return undefined;
+        }
+        return parseDate(strValue);
     })
     dateFrom?: Date | null;
     @OptionalProperty({
         default: new Date().toISOString().split('T')[0],
     })
-    @Transform(({ value }: { value: string | undefined }) => {
+    @Transform(({ value }: { value: any }) => {
         if (value === undefined || value === null || value === '') {
             return undefined;
         }
-        return parseDate(value);
+        // If it's already a Date, return it
+        if (value instanceof Date) {
+            return value;
+        }
+        // Convert to string and check if empty
+        const strValue = String(value).trim();
+        if (strValue === '') {
+            return undefined;
+        }
+        return parseDate(strValue);
     })
     dateTo?: Date | null;
     @OptionalProperty()
