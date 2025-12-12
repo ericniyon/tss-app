@@ -86,25 +86,59 @@ export class ApplicationService {
     async create(
         createApplicationDto: CreateApplicationDto,
         user: User,
-    ): Promise<Application> {
-        if (
-            await this.applicationRepo.count({
-                where: {
-                    applicant: user,
-                    status: Any([
-                        EApplicationStatus.PENDING,
-                        EApplicationStatus.FIRST_STAGE_PASSED,
-                    ]),
-                },
-            })
-        )
-            throw new BadRequestException(
-                'You have another application in progress',
-            );
+    ): Promise<{ application: Application | IEditableApplication; isResumed: boolean }> {
         const category = await this.categoryRepo.findOne(
             createApplicationDto.categoryId,
         );
         if (!category) throw new NotFoundException('Category not found');
+        
+        // Check if user has an in-progress application for THIS specific category
+        // Include SUBMITTED status as it can be resumed if not yet reviewed
+        const existingApplication = await this.applicationRepo.findOne({
+            where: {
+                applicant: user,
+                category: { id: category.id },
+                status: Any([
+                    EApplicationStatus.PENDING,
+                    EApplicationStatus.FIRST_STAGE_PASSED,
+                    EApplicationStatus.SUBMITTED,
+                ]),
+            },
+            relations: ['category', 'applicant'],
+            order: { createdAt: 'DESC' }, // Get the most recent one
+        });
+
+        // If existing application found, return editable form data (resume functionality)
+        if (existingApplication) {
+            // Optionally update companyUrl if provided and different
+            if (
+                createApplicationDto.companyUrl &&
+                existingApplication.companyUrl !== createApplicationDto.companyUrl
+            ) {
+                existingApplication.companyUrl = createApplicationDto.companyUrl;
+                await this.applicationRepo.save(existingApplication);
+            }
+
+            // Update answers if provided
+            if (createApplicationDto.answers) {
+                await this.createOrUpdateAnswers(
+                    existingApplication.id,
+                    createApplicationDto.answers,
+                );
+            }
+
+            // Return editable application data with all questions and existing answers
+            // This allows the form to be pre-filled
+            return {
+                application: await this.findEditableApplication(
+                    existingApplication.id,
+                    user,
+                ),
+                isResumed: true,
+            };
+        }
+
+        // Create new application if none exists
         const newApplication = await this.applicationRepo.save({
             ...new Application(),
             companyUrl: createApplicationDto.companyUrl,
@@ -118,7 +152,12 @@ export class ApplicationService {
             );
         }
 
-        return newApplication;
+        return {
+            application: await this.findOne({
+                where: { id: newApplication.id },
+            }),
+            isResumed: false,
+        };
     }
 
     async createOrUpdateAnswers(
@@ -382,6 +421,48 @@ export class ApplicationService {
         });
     }
 
+    async getInProgressApplicationForCategory(
+        categoryId: number,
+        user: User,
+    ): Promise<IEditableApplication | null> {
+        const category = await this.categoryRepo.findOne(categoryId);
+        if (!category) throw new NotFoundException('Category not found');
+
+        // Check for in-progress applications (PENDING, FIRST_STAGE_PASSED, or SUBMITTED)
+        // SUBMITTED can be resumed if it hasn't been reviewed yet
+        const existingApplication = await this.applicationRepo.findOne({
+            where: {
+                applicant: user,
+                category: { id: categoryId },
+                status: Any([
+                    EApplicationStatus.PENDING,
+                    EApplicationStatus.FIRST_STAGE_PASSED,
+                    EApplicationStatus.SUBMITTED,
+                ]),
+            },
+            relations: ['category', 'applicant'],
+            order: { createdAt: 'DESC' }, // Get the most recent one
+        });
+
+        if (!existingApplication) {
+            return null;
+        }
+
+        // Return editable application data with all questions and existing answers
+        try {
+            return await this.findEditableApplication(
+                existingApplication.id,
+                user,
+            );
+        } catch (error) {
+            Logger.error(
+                `Error finding editable application: ${error.message}`,
+                error.stack,
+            );
+            throw error;
+        }
+    }
+
     async findLatestRenewCertificate(user: User): Promise<Application> {
         const application = await this.applicationRepo
             .createQueryBuilder('application')
@@ -587,13 +668,11 @@ export class ApplicationService {
             );
         }
 
-        // Fetch only answers for this specific application
-        const answers = await this.answerRepo.find({
-            where: { application: { id } },
-            relations: ['question', 'question.section'],
-        });
+        // Fetch all questions for this category (not just ones with answers)
+        const allQuestions = await this.findQuestions(application.category.id);
 
-        if (answers.length === 0) {
+        // If no questions found, return application with empty sections
+        if (!allQuestions || allQuestions.length === 0) {
             return {
                 ...application,
                 answers: [],
@@ -601,37 +680,28 @@ export class ApplicationService {
             };
         }
 
+        // Fetch existing answers for this specific application
+        const answers = await this.answerRepo.find({
+            where: { application: { id } },
+            relations: ['question', 'question.section'],
+        });
+
         // Build map of question ID to answer for quick lookup
         const answersMap = new Map<number, Answer>();
-        const questionIds = new Set<number>();
-        const sectionIds = new Set<number>();
-
         for (const answer of answers) {
             if (answer.question?.id) {
                 answersMap.set(answer.question.id, answer);
-                questionIds.add(answer.question.id);
-                if (answer.question.section?.id) {
-                    sectionIds.add(answer.question.section.id);
-                }
             }
         }
 
-        // Fetch only questions that have answers for this application
-        const questions = await this.questionRepo.find({
-            where: { id: Array.from(questionIds) },
-            relations: ['section'],
-        });
-
-        // Build sections map - only include sections that have questions with answers
+        // Build sections map - include ALL questions, with answers where they exist
         const sectionsMap = new Map<
             number,
             IEditableApplication['sections'][number]
         >();
 
-        for (const question of questions) {
-            // Only process questions that have answers
-            const existingAnswer = answersMap.get(question.id);
-            if (!existingAnswer || !question.section) continue;
+        for (const question of allQuestions) {
+            if (!question.section) continue;
 
             if (!sectionsMap.has(question.section.id)) {
                 sectionsMap.set(question.section.id, {
@@ -645,20 +715,25 @@ export class ApplicationService {
             const currentSection = sectionsMap.get(question.section.id);
             if (!currentSection) continue;
 
-            // Only add question if it has an answer
+            // Get existing answer if it exists
+            const existingAnswer = answersMap.get(question.id);
+
+            // Add question with answer if it exists, or without answer if it doesn't
             currentSection.questions.push({
                 id: question.id,
                 text: question.text,
                 type: question.type,
                 requiresAttachments: question.requiresAttachments,
                 possibleAnswers: question.possibleAnswers || [],
-                answer: {
-                    id: existingAnswer.id,
-                    responses: existingAnswer.responses || [],
-                    attachments: existingAnswer.attachments || [],
-                    status: existingAnswer.status,
-                    feedback: existingAnswer.feedback,
-                },
+                answer: existingAnswer
+                    ? {
+                          id: existingAnswer.id,
+                          responses: existingAnswer.responses || [],
+                          attachments: existingAnswer.attachments || [],
+                          status: existingAnswer.status,
+                          feedback: existingAnswer.feedback,
+                      }
+                    : undefined,
             });
         }
 
@@ -670,10 +745,10 @@ export class ApplicationService {
             }))
             .sort((a, b) => a.id - b.id);
 
-        // Return application with only answers for this application
+        // Return application with all questions and existing answers
         return {
             ...application,
-            answers: answers, // Only answers for this application
+            answers: answers,
             sections,
         };
     }
@@ -1261,5 +1336,195 @@ export class ApplicationService {
                 `Failed to delete image: ${error.message || 'Unknown error'}`,
             );
         }
+    }
+
+    // Application Management Methods
+    async getManagementOverview(user: User): Promise<{
+        total: number;
+        ongoing: number;
+        submitted: number;
+        approved: number;
+        denied: number;
+        draft: number;
+    }> {
+        const queryBuilder = this.applicationRepo
+            .createQueryBuilder('application')
+            .leftJoin('application.applicant', 'applicant')
+            .where('applicant.id = :applicantId', { applicantId: user.id });
+
+        const [total, ongoing, submitted, approved, denied, draft] =
+            await Promise.all([
+                queryBuilder.getCount(),
+                queryBuilder
+                    .clone()
+                    .andWhere('application.status IN (:...statuses)', {
+                        statuses: [
+                            EApplicationStatus.PENDING,
+                            EApplicationStatus.FIRST_STAGE_PASSED,
+                            EApplicationStatus.SUBMITTED,
+                        ],
+                    })
+                    .getCount(),
+                queryBuilder
+                    .clone()
+                    .andWhere('application.status = :status', {
+                        status: EApplicationStatus.SUBMITTED,
+                    })
+                    .getCount(),
+                queryBuilder
+                    .clone()
+                    .andWhere('application.status = :status', {
+                        status: EApplicationStatus.APPROVED,
+                    })
+                    .getCount(),
+                queryBuilder
+                    .clone()
+                    .andWhere('application.status = :status', {
+                        status: EApplicationStatus.DENIED,
+                    })
+                    .getCount(),
+                queryBuilder
+                    .clone()
+                    .andWhere('application.status = :status', {
+                        status: EApplicationStatus.PENDING,
+                    })
+                    .andWhere('application.submittedAt IS NULL')
+                    .getCount(),
+            ]);
+
+        return {
+            total,
+            ongoing,
+            submitted,
+            approved,
+            denied,
+            draft,
+        };
+    }
+
+    async getOngoingApplications(
+        user: User,
+        options: IPagination,
+    ): Promise<IPage<Application>> {
+        const queryBuilder = this.applicationRepo
+            .createQueryBuilder('application')
+            .leftJoin('application.applicant', 'applicant')
+            .leftJoin('application.category', 'category')
+            .leftJoin('application.assignees', 'assignees')
+            .addSelect([
+                'category.id',
+                'category.name',
+                'applicant.id',
+                'applicant.name',
+                'applicant.email',
+                'assignees.id',
+                'assignees.name',
+            ])
+            .where('applicant.id = :applicantId', { applicantId: user.id })
+            .andWhere('application.status IN (:...statuses)', {
+                statuses: [
+                    EApplicationStatus.PENDING,
+                    EApplicationStatus.FIRST_STAGE_PASSED,
+                    EApplicationStatus.SUBMITTED,
+                ],
+            })
+            .orderBy('application.createdAt', 'DESC');
+
+        const result = await queryBuilder
+            .skip((options.page - 1) * options.limit)
+            .take(options.limit)
+            .getManyAndCount();
+
+        return {
+            items: result[0],
+            totalItems: result[1],
+            itemCount: result[0].length,
+            itemsPerPage: options.limit,
+            totalPages: Math.ceil(result[1] / options.limit),
+            currentPage: options.page,
+        };
+    }
+
+    async getCompletedApplications(
+        user: User,
+        options: IPagination,
+    ): Promise<IPage<Application>> {
+        const queryBuilder = this.applicationRepo
+            .createQueryBuilder('application')
+            .leftJoin('application.applicant', 'applicant')
+            .leftJoin('application.category', 'category')
+            .leftJoin('application.assignees', 'assignees')
+            .leftJoin('application.certificate', 'certificate')
+            .addSelect([
+                'category.id',
+                'category.name',
+                'applicant.id',
+                'applicant.name',
+                'applicant.email',
+                'assignees.id',
+                'assignees.name',
+                'certificate.id',
+                'certificate.uniqueId',
+                'certificate.status',
+            ])
+            .where('applicant.id = :applicantId', { applicantId: user.id })
+            .andWhere('application.status IN (:...statuses)', {
+                statuses: [
+                    EApplicationStatus.APPROVED,
+                    EApplicationStatus.DENIED,
+                ],
+            })
+            .orderBy('application.createdAt', 'DESC');
+
+        const result = await queryBuilder
+            .skip((options.page - 1) * options.limit)
+            .take(options.limit)
+            .getManyAndCount();
+
+        return {
+            items: result[0],
+            totalItems: result[1],
+            itemCount: result[0].length,
+            itemsPerPage: options.limit,
+            totalPages: Math.ceil(result[1] / options.limit),
+            currentPage: options.page,
+        };
+    }
+
+    async getDraftApplications(
+        user: User,
+        options: IPagination,
+    ): Promise<IPage<Application>> {
+        const queryBuilder = this.applicationRepo
+            .createQueryBuilder('application')
+            .leftJoin('application.applicant', 'applicant')
+            .leftJoin('application.category', 'category')
+            .addSelect([
+                'category.id',
+                'category.name',
+                'applicant.id',
+                'applicant.name',
+                'applicant.email',
+            ])
+            .where('applicant.id = :applicantId', { applicantId: user.id })
+            .andWhere('application.status = :status', {
+                status: EApplicationStatus.PENDING,
+            })
+            .andWhere('application.submittedAt IS NULL')
+            .orderBy('application.createdAt', 'DESC');
+
+        const result = await queryBuilder
+            .skip((options.page - 1) * options.limit)
+            .take(options.limit)
+            .getManyAndCount();
+
+        return {
+            items: result[0],
+            totalItems: result[1],
+            itemCount: result[0].length,
+            itemsPerPage: options.limit,
+            totalPages: Math.ceil(result[1] / options.limit),
+            currentPage: options.page,
+        };
     }
 }

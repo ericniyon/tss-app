@@ -60,13 +60,16 @@ export class ApplicationController {
     async create(
         @Body() createApplicationDto: CreateApplicationDto,
         @GetUser() user: User,
-    ): Promise<GenericResponse<Application>> {
-        const results = await this.applicationService.create(
-            createApplicationDto,
-            user,
-        );
+    ): Promise<GenericResponse<Application | ApplicationEditResponseDto>> {
+        const { application, isResumed } =
+            await this.applicationService.create(createApplicationDto, user);
 
-        return { message: 'Application created successfully', results };
+        return {
+            message: isResumed
+                ? 'Application resumed successfully. You can continue filling the form.'
+                : 'Application created successfully',
+            results: application as Application | ApplicationEditResponseDto,
+        };
     }
 
     @Auth()
@@ -128,6 +131,115 @@ export class ApplicationController {
                     user,
                 ),
         };
+    }
+
+    // Application Management Endpoints
+    @Auth()
+    @Get('management/overview')
+    @OkResponse()
+    async getManagementOverview(
+        @GetUser() user: User,
+    ): Promise<
+        GenericResponse<{
+            total: number;
+            ongoing: number;
+            submitted: number;
+            approved: number;
+            denied: number;
+            draft: number;
+        }>
+    > {
+        return {
+            message: 'Application overview retrieved successfully',
+            results:
+                await this.applicationService.getManagementOverview(user),
+        };
+    }
+
+    @Auth()
+    @Get('management/ongoing')
+    @Paginated()
+    @PageResponse(Application)
+    async getOngoingApplications(
+        @GetUser() user: User,
+        @PaginationParams() options: IPagination,
+    ): Promise<GenericResponse<IPage<Application>>> {
+        return {
+            message: 'Ongoing applications retrieved successfully',
+            results:
+                await this.applicationService.getOngoingApplications(
+                    user,
+                    options,
+                ),
+        };
+    }
+
+    @Auth()
+    @Get('management/completed')
+    @Paginated()
+    @PageResponse(Application)
+    async getCompletedApplications(
+        @GetUser() user: User,
+        @PaginationParams() options: IPagination,
+    ): Promise<GenericResponse<IPage<Application>>> {
+        return {
+            message: 'Completed applications retrieved successfully',
+            results:
+                await this.applicationService.getCompletedApplications(
+                    user,
+                    options,
+                ),
+        };
+    }
+
+    @Auth()
+    @Get('management/draft')
+    @Paginated()
+    @PageResponse(Application)
+    async getDraftApplications(
+        @GetUser() user: User,
+        @PaginationParams() options: IPagination,
+    ): Promise<GenericResponse<IPage<Application>>> {
+        return {
+            message: 'Draft applications retrieved successfully',
+            results:
+                await this.applicationService.getDraftApplications(
+                    user,
+                    options,
+                ),
+        };
+    }
+
+    @Auth()
+    @Get('resume/:categoryId')
+    @OkResponse(ApplicationEditResponseDto)
+    async resumeApplication(
+        @Param('categoryId', ParseIntPipe) categoryId: number,
+        @GetUser() user: User,
+    ): Promise<GenericResponse<ApplicationEditResponseDto | null>> {
+        try {
+            const application =
+                await this.applicationService.getInProgressApplicationForCategory(
+                    categoryId,
+                    user,
+                );
+
+            if (!application) {
+                return {
+                    message:
+                        'No in-progress application found for this category. You can create a new one.',
+                    results: null,
+                };
+            }
+
+            return {
+                message:
+                    'Application retrieved successfully. You can continue filling the form.',
+                results: application as ApplicationEditResponseDto,
+            };
+        } catch (error) {
+            throw error;
+        }
     }
 
     @Auth()
