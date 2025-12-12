@@ -177,12 +177,22 @@ export class ApplicationService {
                 );
         }
         const allQns = await this.findQuestions(application.category.id);
+        const activeQuestionIds = new Set(allQns.map((q) => q.id));
+        
         for (const ans of dto.answers) {
-            const question = allQns.find((q) => q.id === ans.questionId);
-            if (!question)
+            // Check if question exists and is active
+            if (!activeQuestionIds.has(ans.questionId)) {
                 throw new NotFoundException(
-                    `Question with id[${ans.questionId}] not found.`,
+                    `Question with id[${ans.questionId}] not found or has been deactivated. Please refresh the form to get the latest questions.`,
                 );
+            }
+            
+            const question = allQns.find((q) => q.id === ans.questionId);
+            if (!question) {
+                throw new NotFoundException(
+                    `Question with id[${ans.questionId}] not found. Please refresh the form to get the latest questions.`,
+                );
+            }
             let existingAnswer = application.answers.find(
                 (a) => a.question.id === ans.questionId,
             );
@@ -687,9 +697,13 @@ export class ApplicationService {
         });
 
         // Build map of question ID to answer for quick lookup
+        // Filter out answers that reference deleted/inactive questions
         const answersMap = new Map<number, Answer>();
+        const activeQuestionIds = new Set(allQuestions.map((q) => q.id));
+        
         for (const answer of answers) {
-            if (answer.question?.id) {
+            // Only include answers for questions that still exist and are active
+            if (answer.question?.id && activeQuestionIds.has(answer.question.id)) {
                 answersMap.set(answer.question.id, answer);
             }
         }
