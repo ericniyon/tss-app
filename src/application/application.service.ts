@@ -179,19 +179,39 @@ export class ApplicationService {
         const allQns = await this.findQuestions(application.category.id);
         const activeQuestionIds = new Set(allQns.map((q) => q.id));
         
-        for (const ans of dto.answers) {
-            // Check if question exists and is active
-            if (!activeQuestionIds.has(ans.questionId)) {
-                throw new NotFoundException(
-                    `Question with id[${ans.questionId}] not found or has been deactivated. Please refresh the form to get the latest questions.`,
+        // Filter out answers for questions that no longer exist or are inactive
+        const validAnswers = dto.answers.filter((ans) =>
+            activeQuestionIds.has(ans.questionId),
+        );
+        const invalidQuestionIds = dto.answers
+            .filter((ans) => !activeQuestionIds.has(ans.questionId))
+            .map((ans) => ans.questionId);
+
+        // Log warning if any invalid questions were filtered out
+        if (invalidQuestionIds.length > 0) {
+            Logger.warn(
+                `Skipping answers for invalid/deactivated questions: ${invalidQuestionIds.join(', ')}. Application ID: ${id}`,
+            );
+        }
+
+        // If no valid answers remain, return the application as-is
+        if (validAnswers.length === 0) {
+            if (invalidQuestionIds.length > 0) {
+                throw new BadRequestException(
+                    `All submitted questions (${invalidQuestionIds.join(', ')}) have been deactivated or removed. Please refresh the form to get the latest questions.`,
                 );
             }
-            
+            return await this.findOne({ where: { id: application.id } });
+        }
+
+        for (const ans of validAnswers) {
             const question = allQns.find((q) => q.id === ans.questionId);
             if (!question) {
-                throw new NotFoundException(
-                    `Question with id[${ans.questionId}] not found. Please refresh the form to get the latest questions.`,
+                // This shouldn't happen due to filtering, but handle it gracefully
+                Logger.warn(
+                    `Question ${ans.questionId} not found in active questions list`,
                 );
+                continue;
             }
             let existingAnswer = application.answers.find(
                 (a) => a.question.id === ans.questionId,
@@ -225,7 +245,18 @@ export class ApplicationService {
             await this.applicationRepo.save(application);
         }
         
-        return await this.findOne({ where: { id: application.id } });
+        const updatedApplication = await this.findOne({
+            where: { id: application.id },
+        });
+
+        // If there were invalid questions, log them (frontend should refresh form)
+        if (invalidQuestionIds.length > 0) {
+            Logger.warn(
+                `Application ${id}: Processed ${validAnswers.length} valid answers, skipped ${invalidQuestionIds.length} invalid questions: ${invalidQuestionIds.join(', ')}`,
+            );
+        }
+
+        return updatedApplication;
     }
 
     async createAnswer(
