@@ -176,15 +176,52 @@ export class ApplicationService {
                     'You need to answer all questions for this section',
                 );
         }
+        // Get active questions for validation (used for form display)
         const allQns = await this.findQuestions(application.category.id);
         const activeQuestionIds = new Set(allQns.map((q) => q.id));
         
-        // Filter out answers for questions that no longer exist or are inactive
+        // Also check if questions exist in database (even if inactive)
+        // This allows users to update answers for questions that might have been temporarily deactivated
+        const allQuestionIds = dto.answers.map((a) => a.questionId);
+        
+        // Use query builder to properly join categories
+        const existingQuestions = await this.questionRepo
+            .createQueryBuilder('question')
+            .leftJoinAndSelect('question.categories', 'categories')
+            .where('question.id IN (:...ids)', { ids: allQuestionIds })
+            .getMany();
+        
+        Logger.debug(
+            `Found ${existingQuestions.length} questions out of ${allQuestionIds.length} submitted. Application category: ${application.category.id}`,
+        );
+        
+        // Check if questions belong to the application's category
+        const validQuestionIds = new Set<number>();
+        for (const question of existingQuestions) {
+            if (question.categories && question.categories.length > 0) {
+                const belongsToCategory = question.categories.some(
+                    (cat) => cat.id === application.category.id,
+                );
+                if (belongsToCategory) {
+                    validQuestionIds.add(question.id);
+                } else {
+                    Logger.warn(
+                        `Question ${question.id} exists but doesn't belong to category ${application.category.id}. It belongs to: ${question.categories.map((c) => c.id).join(', ')}`,
+                    );
+                }
+            } else {
+                Logger.warn(
+                    `Question ${question.id} has no categories associated`,
+                );
+            }
+        }
+        
+        // Filter out answers for questions that don't exist or don't belong to this category
         const validAnswers = dto.answers.filter((ans) =>
-            activeQuestionIds.has(ans.questionId),
+            validQuestionIds.has(ans.questionId),
         );
         const invalidQuestionIds = dto.answers
-            .filter((ans) => !activeQuestionIds.has(ans.questionId))
+            .filter((ans) => !validQuestionIds.has(ans.questionId))
             .map((ans) => ans.questionId);
 
         // Log warning if any invalid questions were filtered out
@@ -204,12 +241,21 @@ export class ApplicationService {
             return await this.findOne({ where: { id: application.id } });
         }
 
+        // Build a map of all questions (active + existing) for quick lookup
+        const allQuestionsMap = new Map<number, Question>();
+        allQns.forEach((q) => allQuestionsMap.set(q.id, q));
+        existingQuestions.forEach((q) => {
+            if (!allQuestionsMap.has(q.id)) {
+                allQuestionsMap.set(q.id, q);
+            }
+        });
+
         for (const ans of validAnswers) {
-            const question = allQns.find((q) => q.id === ans.questionId);
+            // Get question from map (could be active or inactive, but exists and belongs to category)
+            const question = allQuestionsMap.get(ans.questionId);
             if (!question) {
-                // This shouldn't happen due to filtering, but handle it gracefully
                 Logger.warn(
-                    `Question ${ans.questionId} not found in active questions list`,
+                    `Question ${ans.questionId} not found after validation`,
                 );
                 continue;
             }
