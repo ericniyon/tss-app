@@ -165,6 +165,12 @@ export class ApplicationService {
         dto: CreateOrUpdateAnswersDto,
     ): Promise<Application> {
         const application = await this.findOne({ where: { id } });
+        
+        // Handle empty or missing answers
+        if (!dto.answers || !Array.isArray(dto.answers) || dto.answers.length === 0) {
+            return await this.findOne({ where: { id: application.id } });
+        }
+        
         const qns = await this.findQuestions(
             application.category.id,
             dto.sectionId,
@@ -184,12 +190,16 @@ export class ApplicationService {
         // This allows users to update answers for questions that might have been temporarily deactivated
         const allQuestionIds = dto.answers.map((a) => a.questionId);
         
-        // Use query builder to properly join categories
-        const existingQuestions = await this.questionRepo
-            .createQueryBuilder('question')
-            .leftJoinAndSelect('question.categories', 'categories')
-            .where('question.id IN (:...ids)', { ids: allQuestionIds })
-            .getMany();
+        // Handle empty array case to avoid SQL syntax errors
+        let existingQuestions: Question[] = [];
+        if (allQuestionIds.length > 0) {
+            // Use query builder to properly join categories
+            existingQuestions = await this.questionRepo
+                .createQueryBuilder('question')
+                .leftJoinAndSelect('question.categories', 'categories')
+                .where('question.id IN (:...ids)', { ids: allQuestionIds })
+                .getMany();
+        }
         
         Logger.debug(
             `Found ${existingQuestions.length} questions out of ${allQuestionIds.length} submitted. Application category: ${application.category.id}`,
