@@ -1,4 +1,4 @@
-FROM node:16.16-slim As development
+FROM node:16.20-slim AS development
 
 WORKDIR /usr/src/app
 
@@ -10,7 +10,7 @@ COPY . .
 
 RUN yarn build
 
-FROM node:16.16-slim as production
+FROM node:16.20-slim AS production
 
 ENV NODE_ENV=
 ENV PORT=
