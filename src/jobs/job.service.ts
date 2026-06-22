@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
 import { Certificate } from '../certificate/entities/certificate.entity';
 import { ECertificateStatus } from '../certificate/enums';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { CertificateExpireReminderTemplate } from '../shared/templates/certificate-expire-reminder';
 import { compareDate } from '../shared/utils/reminderDate';
 
@@ -19,9 +19,8 @@ export class JobService {
     constructor(
         @InjectRepository(Certificate)
         private readonly certificateRepo: Repository<Certificate>,
-        private sendgridService: SendGridService,
-        private configService: ConfigService,
-
+        private mailerService: MailerService,
+        private readonly configService: ConfigService,
         private readonly connection: Connection,
     ) {}
     @Cron(cronExpression)
@@ -40,13 +39,13 @@ export class JobService {
         });
         if (applicants.length > 0) {
             const updateEmail = {
-                to: applicants,
+                to: applicants.map((email) => ({ email })),
                 subject: 'Trust seal certificate update.',
-                from: this.configService.get('sendgrid').fromEmail,
+                from: { email: this.configService.get('mailer').fromEmail },
                 text: `Hello applicant, your certificate is about to expire`,
                 html: CertificateExpireReminderTemplate('is about to expire'),
             };
-            this.sendgridService.sendMultiple(updateEmail);
+            this.mailerService.sendMultiple(updateEmail);
         }
     }
 }

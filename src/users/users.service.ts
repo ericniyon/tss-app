@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { Not, Repository } from 'typeorm';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { Roles } from '../shared/enums/roles.enum';
 import { IPage, IPagination } from '../shared/interfaces/page.interface';
 import { ConfirmationEmailTemplate } from '../shared/templates/confirmation-email';
@@ -22,7 +22,7 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
-        private readonly sendGridService: SendGridService,
+        private readonly mailerService: MailerService,
         private readonly configService: ConfigService,
         private readonly passwordEncryption: PasswordEncryption,
     ) {}
@@ -44,9 +44,9 @@ export class UsersService {
             password,
         } as User);
         const confirmationMail = {
-            to: results.email,
+            to: [{ email: results.email }],
             subject: 'Trust seal account confirmation',
-            from: this.configService.get('sendgrid').fromEmail,
+            from: { email: this.configService.get('mailer').fromEmail },
             text: `Account creation confirmation`,
             html: ConfirmationEmailTemplate(
                 results.name.split(' ')[0],
@@ -54,7 +54,7 @@ export class UsersService {
                 this.configService.get('web').adminUrl,
             ),
         };
-        await this.sendGridService.send(confirmationMail);
+        await this.mailerService.send(confirmationMail);
         delete results.password;
         return results;
     }

@@ -6,7 +6,7 @@ import { CertificateModule } from '../certificate/certificate.module';
 import { Category } from '../category/entities/category.entity';
 import { CertificateService } from '../certificate/certificate.service';
 import { Certificate } from '../certificate/entities/certificate.entity';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { Question } from '../question/entities/question.entity';
 import { Section } from '../section/entities/section.entity';
 import { User } from '../users/entities/user.entity';
@@ -33,7 +33,7 @@ import { ApplicationSnapshot } from './entities/application-snapshot.entity';
         CertificateModule,
     ],
     controllers: [ApplicationController, AnswerController],
-    providers: [ApplicationService, SendGridService, ConfigService],
+    providers: [ApplicationService, MailerService, ConfigService],
     exports: [ApplicationService],
 })
 export class ApplicationModule {}

@@ -7,7 +7,7 @@ import { Notification } from './entities/notification.entity';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
 import { PindoService } from './pindo.service';
-import { SendGridService } from './sendgrid.service';
+import { MailerService } from './mailtrap.service';
 
 @Module({
     imports: [
@@ -15,6 +15,6 @@ import { SendGridService } from './sendgrid.service';
         HttpModule,
     ],
     controllers: [NotificationController],
-    providers: [NotificationService, PindoService, SendGridService],
+    providers: [NotificationService, PindoService, MailerService],
 })
 export class NotificationModule {}
