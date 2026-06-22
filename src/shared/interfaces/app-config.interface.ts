@@ -19,9 +19,11 @@ interface AppConfig {
         apiKey: string;
         apiUrl: string;
     };
-    sendgrid?: {
-        apiKey: string;
+    mailer?: {
+        apiToken: string;
+        testInboxId?: number;
         fromEmail: string;
+        testEmailSecret: string;
     };
 }
 export default AppConfig;

@@ -13,7 +13,7 @@ import * as omit from 'lodash.omit';
 import * as pick from 'lodash.pick';
 import { Any, Connection, Not, Repository } from 'typeorm';
 import { PindoService } from '../notification/pindo.service';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { OtpType } from '../shared/enums/otp-type.enum';
 import { Roles } from '../shared/enums/roles.enum';
 import { ForgotPasswordEmailTemplate } from '../shared/templates/forgot-password-email';
@@ -45,7 +45,7 @@ export class AuthService {
         @InjectRepository(AuthOtp)
         private readonly otpRepository: Repository<AuthOtp>,
         private readonly configService: ConfigService,
-        private readonly sendGridService: SendGridService,
+        private readonly mailerService: MailerService,
     ) {}
     async register(createUserDto: CreateUserDto): Promise<void> {
         createUserDto.password = await this.passwordEncryption.hashPassword(
@@ -121,18 +121,17 @@ export class AuthService {
         const verificationLink = `${
             this.configService.get('web').clientUrl
         }/verify`;
-        const verificationMail = {
-            to: user.email,
+        await this.mailerService.send({
+            to: [{ email: user.email }],
             subject: 'Trust seal verify account',
-            from: this.configService.get('sendgrid').fromEmail,
+            from: { email: this.configService.get('mailer').fromEmail },
             text: `Hello ${user.name} verify the account`,
             html: VerificationEmailTemplate(
                 user.name,
                 verificationLink,
                 verificationCode,
             ),
-        };
-        await this.sendGridService.send(verificationMail);
+        });
         await this.pindoService.send(
             user.phone,
             `Dear ${user.name} Team, use the code below to verify your DBI trust seal account.
@@ -270,18 +269,17 @@ export class AuthService {
                 ? this.configService.get('web').adminUrl
                 : this.configService.get('web').clientUrl
         }/reset-password/?token=${forgotPasswordToken}`;
-        const forgotPasswordEmail = {
-            to: user.email,
+        await this.mailerService.send({
+            to: [{ email: user.email }],
             subject: 'Reset password',
-            from: this.configService.get('sendgrid').fromEmail,
+            from: { email: this.configService.get('mailer').fromEmail },
             text: `Hello  ${user.name}, you can now reset your password`,
             html: ForgotPasswordEmailTemplate(
                 user.name,
                 resetPasswordLink,
                 resetPasswordCode,
             ),
-        };
-        await this.sendGridService.send(forgotPasswordEmail);
+        });
         return {
             resetToken: forgotPasswordToken,
             resetCode: resetPasswordCode,
@@ -348,17 +346,16 @@ export class AuthService {
                     : this.configService.get('web').adminUrl
             }/verify-email?token=${verifyEmailToken}`;
 
-            const verificationMail = {
-                to: updateProfileDto.email,
+            await this.mailerService.send({
+                to: [{ email: updateProfileDto.email }],
                 subject: 'Trust seal verify new email',
-                from: this.configService.get('sendgrid').fromEmail,
+                from: { email: this.configService.get('mailer').fromEmail },
                 text: `Hello ${profile.name} verify your new email`,
                 html: UpdateEmailVerificationTemplate(
                     profile.name,
                     verificationLink,
                 ),
-            };
-            await this.sendGridService.send(verificationMail);
+            });
             emailSent = true;
         }
         return emailSent;

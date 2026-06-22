@@ -7,7 +7,7 @@ import { Application } from '../application/entities/application.entity';
 import { ApplicationSnapshot } from '../application/entities/application-snapshot.entity';
 import { EApplicationStatus } from '../application/enums';
 import { buildApplicationSnapshotPayload } from '../application/utils/application-snapshot.util';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { EPaymentType } from '../payment/enums/payment-type.enum';
 import { Subcategory } from '../subcategory/entities/subcategory.entity';
@@ -25,7 +25,7 @@ export class CertificateService {
     constructor(
         @InjectRepository(Certificate)
         private readonly certificateRepo: Repository<Certificate>,
-        private sendgridService: SendGridService,
+        private mailerService: MailerService,
         private configService: ConfigService,
         @InjectRepository(Application)
         private readonly appRepo: Repository<Application>,
@@ -155,11 +155,11 @@ export class CertificateService {
             where: { activated: true, role: Roles.DBI_ADMIN },
         });
         const updateEmail = {
-            to: certificate.application.applicant.email,
-            cc: certificate.application.assignees.map((a) => a.email),
-            bcc: admins.map((a) => a.email),
+            to: [{ email: certificate.application.applicant.email }],
+            cc: certificate.application.assignees.map((a) => ({ email: a.email })),
+            bcc: admins.map((a) => ({ email: a.email })),
             subject: 'Trust seal certificate renewed successfully.',
-            from: this.configService.get('sendgrid').fromEmail,
+            from: { email: this.configService.get('mailer').fromEmail },
             text: `Hello ${certificate.application.applicant.name}, your certificate status has been updated`,
             html: CertificateStatusUpdateEmailTemplate(
                 certificate.application.applicant,
@@ -168,7 +168,7 @@ export class CertificateService {
                 this.configService.get('web').clientUrl,
             ),
         };
-        this.sendgridService.send(updateEmail);
+        this.mailerService.send(updateEmail);
         return result;
     }
 
@@ -264,11 +264,11 @@ export class CertificateService {
                 where: { activated: true, role: Roles.DBI_ADMIN },
             });
             const updateEmail = {
-                to: certificate.application.applicant.email,
-                cc: certificate.application.assignees.map((a) => a.email),
-                bcc: admins.map((a) => a.email),
+                to: [{ email: certificate.application.applicant.email }],
+                cc: certificate.application.assignees.map((a) => ({ email: a.email })),
+                bcc: admins.map((a) => ({ email: a.email })),
                 subject: 'DBI Trust Seal Account Notification',
-                from: this.configService.get('sendgrid').fromEmail,
+                from: { email: this.configService.get('mailer').fromEmail },
                 text: `Hello ${certificate.application.applicant.name} Team, your certificate status has been updated`,
                 html: CertificateStatusUpdateEmailTemplate(
                     certificate.application.applicant,
@@ -277,7 +277,7 @@ export class CertificateService {
                     this.configService.get('web').clientUrl,
                 ),
             };
-            this.sendgridService.send(updateEmail);
+            this.mailerService.send(updateEmail);
         }
         return certificate;
     }

@@ -28,12 +28,13 @@ export const commonConfig = (): AppConfig => ({
                 : process.env.PINDO_API_KEY,
         apiUrl: process.env.PINDO_API_URL,
     },
-    sendgrid: {
-        apiKey:
-            process.env.NODE_ENV === 'test'
-                ? 'SG.testing'
-                : process.env.SENDGRID_API_KEY,
+    mailer: {
+        apiToken: process.env.MAILTRAP_API_TOKEN,
+        testInboxId: process.env.MAILTRAP_TEST_INBOX_ID
+            ? parseInt(process.env.MAILTRAP_TEST_INBOX_ID)
+            : undefined,
         fromEmail: process.env.SENT_EMAIL_FROM,
+        testEmailSecret: process.env.TEST_EMAIL_SECRET || 'dbi-secret',
     },
 });
 

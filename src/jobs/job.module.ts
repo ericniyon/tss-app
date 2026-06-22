@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Certificate } from '../certificate/entities/certificate.entity';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { JobService } from './job.service';
 
 @Module({
@@ -11,6 +11,6 @@ import { JobService } from './job.service';
         TypeOrmModule.forFeature([Certificate]),
         ScheduleModule.forRoot(),
     ],
-    providers: [JobService, SendGridService, ConfigService],
+    providers: [JobService, MailerService, ConfigService],
 })
 export class JobModule {}

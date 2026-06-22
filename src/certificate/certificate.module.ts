@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Application } from '../application/entities/application.entity';
 import { ApplicationSnapshot } from '../application/entities/application-snapshot.entity';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { Subcategory } from '../subcategory/entities/subcategory.entity';
 import { User } from '../users/entities/user.entity';
@@ -23,7 +23,7 @@ import { Certificate } from './entities/certificate.entity';
         ]),
     ],
     controllers: [CertificateController],
-    providers: [CertificateService, SendGridService, ConfigService],
+    providers: [CertificateService, MailerService, ConfigService],
     exports: [CertificateService],
 })
 export class CertificateModule {}

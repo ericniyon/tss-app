@@ -10,7 +10,6 @@ import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as ExcelJS from 'exceljs';
-import { MailDataRequired } from '@sendgrid/mail';
 import {
     Any,
     Brackets,
@@ -23,7 +22,7 @@ import { Category } from '../category/entities/category.entity';
 import { CertificateService } from '../certificate/certificate.service';
 import { Certificate } from '../certificate/entities/certificate.entity';
 import { ECertificateStatus } from '../certificate/enums';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { Question } from '../question/entities/question.entity';
 import { Section } from '../section/entities/section.entity';
 import { Roles } from '../shared/enums/roles.enum';
@@ -76,7 +75,7 @@ export class ApplicationService {
         private readonly certificateRepo: Repository<Certificate>,
         @InjectRepository(ApplicationSnapshot)
         private readonly snapshotRepo: Repository<ApplicationSnapshot>,
-        private sendgridService: SendGridService,
+        private mailerService: MailerService,
         private configService: ConfigService,
         private certificateService: CertificateService,
         private httpService: HttpService,
@@ -979,12 +978,12 @@ export class ApplicationService {
             const admins = await this.userRepo.find({
                 where: { activated: true, role: Roles.DBI_ADMIN },
             });
-            const updateEmail: MailDataRequired = {
-                to: application.applicant.email,
-                cc: application.assignees.map((a) => a.email),
-                bcc: admins.map((a) => a.email),
+            const updateEmail = {
+                to: [{ email: application.applicant.email }],
+                cc: application.assignees.map((a) => ({ email: a.email })),
+                bcc: admins.map((a) => ({ email: a.email })),
                 subject: 'DBI Trust Seal Account Notification',
-                from: this.configService.get('sendgrid').fromEmail,
+                from: { email: this.configService.get('mailer').fromEmail },
                 text: `Hello ${application.applicant.name} Team, your application status has been updated`,
                 html: ApplicationStatusUpdateEmailTemplate(
                     application.applicant,
@@ -993,7 +992,7 @@ export class ApplicationService {
                     message,
                 ),
             };
-            this.sendgridService.send(updateEmail);
+            this.mailerService.send(updateEmail);
             return application;
         } catch (err) {
             Logger.error(err);
@@ -1013,16 +1012,16 @@ export class ApplicationService {
                 application.assignees.push(assignee);
                 application = await this.applicationRepo.save(application);
                 const assignmentEmail = {
-                    to: assignee.email,
+                    to: [{ email: assignee.email }],
                     subject: 'New Client Notification.',
-                    from: this.configService.get('sendgrid').fromEmail,
+                    from: { email: this.configService.get('mailer').fromEmail },
                     text: `Hello, an application has been assigned to you!`,
                     html: AssignmentEmailTemplate(
                         assignee.name,
                         this.configService.get('web').adminUrl,
                     ),
                 };
-                this.sendgridService.send(assignmentEmail);
+                this.mailerService.send(assignmentEmail);
             }
         }
 
@@ -1102,13 +1101,13 @@ export class ApplicationService {
                 );
             await this.applicationRepo.save(application);
             const submissionEmail = {
-                to: user.email,
+                to: [{ email: user.email }],
                 subject: 'Trust seal application submission.',
-                from: this.configService.get('sendgrid').fromEmail,
+                from: { email: this.configService.get('mailer').fromEmail },
                 text: `Hello ${user.name}, your application has been submitted`,
                 html: SubmissionEmailTemplate(),
             };
-            this.sendgridService
+            this.mailerService
                 .send(submissionEmail)
                 .catch((e) => Logger.error(e));
             const admins = await this.userRepo.find({
@@ -1116,9 +1115,9 @@ export class ApplicationService {
             });
             for (const admin of admins) {
                 const adminSubmissionNotificationEmail = {
-                    to: admin.email,
+                    to: [{ email: admin.email }],
                     subject: 'Trust seal application submission.',
-                    from: this.configService.get('sendgrid').fromEmail,
+                    from: { email: this.configService.get('mailer').fromEmail },
                     text: `Hello ${user.name}, an application has been submitted`,
                     html: AdminSubmissionNotificationEmailTemplate(
                         admin.name,
@@ -1126,7 +1125,7 @@ export class ApplicationService {
                         this.configService.get('web').adminUrl,
                     ),
                 };
-                this.sendgridService
+                this.mailerService
                     .send(adminSubmissionNotificationEmail)
                     .catch((e) => Logger.error(e));
             }

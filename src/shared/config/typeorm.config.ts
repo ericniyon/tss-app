@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { isRunningInDevelopment } from '../utils/env.util';
 
 const migrations = isRunningInDevelopment()
-    ? ['src/db/migrations/*{.ts,.js}']
+    ? []
     : ['dist/src/db/migrations/*{.ts,.js}', 'dist/db/migrations/*{.ts,.js}'];
 
 const typeOrmConfig: TypeOrmModuleOptions = {

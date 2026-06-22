@@ -10,7 +10,7 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { Notification } from './entities/notification.entity';
 import { ENotificationType } from './enums';
 import { PindoService } from './pindo.service';
-import { SendGridService } from './sendgrid.service';
+import { MailerService } from './mailtrap.service';
 
 @Injectable()
 export class NotificationService {
@@ -22,7 +22,7 @@ export class NotificationService {
         @InjectRepository(Category)
         private readonly categoryRepo: Repository<Category>,
         private readonly pindoService: PindoService,
-        private readonly sendgridService: SendGridService,
+        private readonly mailerService: MailerService,
         private readonly configService: ConfigService,
     ) {}
 
@@ -98,12 +98,10 @@ export class NotificationService {
                     applications.map((a) => a.applicant.email).filter((a) => a),
                 ),
             ];
-            await this.sendgridService.sendMultiple({
-                to: recipientEmails,
-                subject: `Trust seal system: ${
-                    createNotificationDto.subject || 'Notification'
-                }`,
-                from: this.configService.get('sendgrid').fromEmail,
+            await this.mailerService.sendMultiple({
+                to: recipientEmails.map((email) => ({ email })),
+                subject: `Trust seal system: ${ createNotificationDto.subject || 'Notification' }`,
+                from: { email: this.configService.get('mailer').fromEmail },
                 html: NotificationEmailTemplate(createNotificationDto.message),
             });
         }

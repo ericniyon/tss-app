@@ -6,7 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import 'dotenv/config';
 import { PindoService } from '../notification/pindo.service';
-import { SendGridService } from '../notification/sendgrid.service';
+import { MailerService } from '../notification/mailtrap.service';
 import { PasswordEncryption } from '../shared/utils/PasswordEncryption';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
@@ -45,7 +45,7 @@ import { JwtRefreshStrategy } from './refresh-jwt.strategy';
         PasswordEncryption,
         PindoService,
         ConfigService,
-        SendGridService,
+        MailerService,
     ],
     exports: [JwtModule, AuthService],
 })

@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SendGridService } from './notification/sendgrid.service';
+import { MailerService } from './notification/mailtrap.service';
 import { NotificationEmailTemplate } from './shared/templates/notification-email';
 
 @Injectable()
 export class AppService {
     constructor(
-        private readonly sendGridService: SendGridService,
+        private readonly mailerService: MailerService,
         private readonly configService: ConfigService,
     ) {}
 
@@ -16,29 +16,59 @@ export class AppService {
         };
     }
 
-    async sendTestEmail(email: string): Promise<any> {
-        const testEmail = {
-            to: email,
-            subject: 'Test Email from Trust Seal System',
-            from: this.configService.get('sendgrid').fromEmail,
-            text: 'This is a test email from the Trust Seal System API.',
-            html: NotificationEmailTemplate(
-                'This is a test email from the Trust Seal System API. If you received this email, the email service is working correctly!',
-            ),
-        };
+    validateTestSecret(secret: string): void {
+        const expected = this.configService.get('mailer').testEmailSecret;
+        if (secret !== expected) {
+            throw new UnauthorizedException('Invalid test email secret');
+        }
+    }
 
+    async sendTestEmail(email: string, secret: string): Promise<any> {
+        this.validateTestSecret(secret);
         try {
-            const result = await this.sendGridService.send(testEmail);
+            const results = await this.mailerService.send({
+                to: [{ email }],
+                subject: 'Test Email from Trust Seal System',
+                from: { email: this.configService.get('mailer').fromEmail },
+                text: 'This is a test email from the Trust Seal System API.',
+                html: NotificationEmailTemplate(
+                    'This is a test email from the Trust Seal System API. If you received this email, the email service is working correctly!',
+                ),
+            });
             return {
                 message: 'Test email sent successfully',
-                email: email,
-                result: result,
+                results: { email, ...results },
             };
         } catch (error) {
+            if (error instanceof UnauthorizedException) throw error;
             return {
                 message: 'Failed to send test email',
-                email: email,
-                error: error.message,
+                results: { email, error: error.message },
+            };
+        }
+    }
+
+    async sendTestEmailBulk(emails: string[], secret: string): Promise<any> {
+        this.validateTestSecret(secret);
+        try {
+            const results = await this.mailerService.send({
+                to: emails.map((email) => ({ email })),
+                subject: 'Test Email from Trust Seal System',
+                from: { email: this.configService.get('mailer').fromEmail },
+                text: 'This is a test email from the Trust Seal System API.',
+                html: NotificationEmailTemplate(
+                    'This is a test email from the Trust Seal System API. If you received this email, the email service is working correctly!',
+                ),
+            });
+            return {
+                message: `Test email sent to ${emails.length} recipient(s)`,
+                results: { emails, ...results },
+            };
+        } catch (error) {
+            if (error instanceof UnauthorizedException) throw error;
+            return {
+                message: 'Failed to send bulk test email',
+                results: { emails, error: error.message },
             };
         }
     }
